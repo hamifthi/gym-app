@@ -1,7 +1,3 @@
-Sex_Choices = (
-    ('F', 'Female'),
-    ('M', 'Male'),
-)
 Sport_Field = (
     ('A', 'Aerobic'),
     ('F', 'Fitness'),

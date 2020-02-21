@@ -5,14 +5,16 @@ from datetime import time
 from multiselectfield import MultiSelectField
 from .choices import *
 
-# The person class which contains credentials of a person whether he or she is athelte or Coach
 class Person(models.Model):
     name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
+    username = models.CharField(max_length=50, null=True)
+    email = models.EmailField(max_length=100, null=True)
+    password = models.CharField(max_length=50, null=True)
     age = models.IntegerField()
-    sex = models.CharField(max_length=1, choices=Sex_Choices)
     sport_field = models.CharField(max_length=1, choices=Sport_Field)
     days_of_week = MultiSelectField(choices=Day_Choices)
+    code = models.CharField(max_length=28, null=True)
 
 class Token(models.Model):
     user = models.OneToOneField(Person, on_delete=models.CASCADE)
