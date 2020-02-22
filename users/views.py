@@ -8,6 +8,7 @@ from django.contrib.auth.hashers import make_password
 from django.core.mail import send_mail
 from users.models import Person, Athlete, Coach, Token
 from json import JSONEncoder
+from .choices import *
 import os, binascii
 import requests
 import datetime
@@ -51,16 +52,28 @@ class Register(View):
         # new user
         if not Person.objects.filter(username = request.POST['username']).exists():
             code = binascii.b2a_hex(os.urandom(28))
-            name=request.POST['name']
-            last_name=request.POST['last_name']
+            name = request.POST['name']
+            last_name = request.POST['last_name']
             email = request.POST['email']
             username = request.POST['username']
             password = make_password(request.POST['password'])
-            age=request.POST['age']
-            # sport_field=request.POST['sport_field']
-            # days_of_week=request.POST['days_of_week']
+            age = request.POST['age']
+            sport_field = request.POST['sport_field']
+            # Here we can't normally send the sport_field for saving in DB we must send the code
+            for sport in Sport_Field:
+                if sport_field == sport[1]:
+                    sport_field = sport[0]
+            # Here we can't normally send the days_of_week for saving in DB we must send the code
+            days_of_week = request.POST['days_of_week']
+            days_of_week = days_of_week.split(', ')
+            list_of_days = []
+            for day in Day_Choices:
+                if day[1].lower() in days_of_week:
+                    list_of_days.append(day[0])
+            # now we save the user normally in DB
             user_account = Person.objects.create(name=name,last_name=last_name, email=email,
-            username=username, password=password, age=age, code=code)
+            username=username, password=password, age=age, sport_field=sport_field,
+            days_of_week=list_of_days, code=code)
             subject = 'Activating your account'
             message = f'To activate your account please click on this link\
                 http://127.0.0.1:8000/users/register/?email={email}&code={code}'
@@ -81,6 +94,7 @@ class Register(View):
             # person exist and we activate it
             if Person.objects.filter(code=code).exists():
                 user = Person.objects.get(email=email)
+                Person.objects.filter(code=code).update(code=None)
                 token = binascii.b2a_hex(os.urandom(64))
                 token = Token.objects.create(user=user, token=token)
                 context = {'message': f'Your account has been activated please save your token is \

@@ -16,6 +16,9 @@ class Person(models.Model):
     days_of_week = MultiSelectField(choices=Day_Choices)
     code = models.CharField(max_length=28, null=True)
 
+    def __str__(self):
+                return f'{self.name}_{self.last_name}'
+
 class Token(models.Model):
     user = models.OneToOneField(Person, on_delete=models.CASCADE)
     token = models.CharField(max_length=64)
