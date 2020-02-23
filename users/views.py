@@ -6,7 +6,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.hashers import make_password
 from django.core.mail import send_mail
-from users.models import Person, Athlete, Coach, Token
+from users.models import Person, Token, Expense, Income
 from json import JSONEncoder
 from .choices import *
 import os, binascii
@@ -75,8 +75,8 @@ class Register(View):
             username=username, password=password, age=age, sport_field=sport_field,
             days_of_week=list_of_days, code=code)
             subject = 'Activating your account'
-            message = f'To activate your account please click on this link\
-                http://127.0.0.1:8000/users/register/?email={email}&code={code}'
+            message = f"To activate your account please click on this link \
+                {request.build_absolute_uri('/register/')}?email={email}&code={code}"
             email_from = settings.EMAIL_HOST_USER
             recipient_list = [email]
             send_mail(subject, message, email_from, recipient_list)
@@ -108,32 +108,33 @@ class Register(View):
             context = {'message': ''}
             return render(request, 'register.html', context)
 
-# @method_decorator(csrf_exempt, name='dispatch')
-# class CreateAthlete(View):
-#     def post(self, request, *args, **kwargs):
-#         trainer = Coach.objects.filter(name = request.POST['trainer'])[0]
-#         token = binascii.b2a_hex(os.urandom(64))
-#         athlete, _ = Athlete.objects.get_or_create(name=request.POST['name'],
-#         last_name=request.POST['last_name'], age=request.POST['age'],
-#         sex=request.POST['sex'], sport_field=request.POST['sport_field'],
-#         days_of_week=request.POST['days_of_week'],
-#         last_payment=request.POST['last_payment'], trainer=trainer)
-#         Token.objects.create(user=athlete, token=token)
-#         return JsonResponse({
-#             'status': 'ok'
-#         }, encoder=JSONEncoder)
+class Index(View):
+    def get(self, request, *args, **kwargs):
+        context = {}
+        return render(request, 'index.html', context)
 
-# @method_decorator(csrf_exempt, name='dispatch')
-# class CreateCoach(View):
-#     def post(self, request, *args, **kargs):
-#         token = binascii.b2a_hex(os.urandom(64))
-#         coach, _ = Coach.objects.get_or_create(name=request.POST['name'],
-#         last_name=request.POST['last_name'], age=request.POST['age'],
-#         sex=request.POST['sex'], sport_field=request.POST['sport_field'],
-#         days_of_week=request.POST['days_of_week'],
-#         salary=request.POST['salary'], start_time=request.POST['start_time'],
-#         end_time=request.POST['end_time'])
-#         Token.objects.create(user=coach, token=token)
-#         return JsonResponse({
-#             'status': 'ok'
-#         }, encoder=JSONEncoder)
+@method_decorator(csrf_exempt, name='dispatch')
+class SubmitIncome(View):
+    def post(self, request, *args, **kwargs):
+        token = request.POST['token']
+        user = Person.objects.filter(token=token).get()
+        if 'date' not in request.POST:
+            date = datetime.datetime.now()
+        Income.objects.create(user=user, amount=request.POST['amount'],
+        details=request.POST['details'], date=date)
+        return JsonResponse({
+            'status': 'ok'
+        }, encoder=JSONEncoder)
+
+@method_decorator(csrf_exempt, name='dispatch')
+class SubmitExpense(View):
+    def post(self, request, *args, **kwargs):
+        token = request.POST['token']
+        user = Person.objects.filter(token=token).get()
+        if 'date' not in request.POST:
+            date = datetime.datetime.now()
+        Expense.objects.create(user=user, amount=request.POST['amount'],
+        details=request.POST['details'], date=date)
+        return JsonResponse({
+            'status': 'ok'
+        }, encoder=JSONEncoder)
