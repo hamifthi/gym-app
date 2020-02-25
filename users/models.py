@@ -26,21 +26,6 @@ class Token(models.Model):
     def __str__(self):
             return f'{self.user.name}_token'
 
-class FinancialTradeOff(models.Model):
-    details = models.CharField(max_length=250)
-    date = models.DateTimeField()
-    amount = models.BigIntegerField()
-    user = models.ForeignKey(Person, on_delete=models.CASCADE)
-    code = models.CharField(max_length=10, default=binascii.b2a_hex(os.urandom(10)))
-
-class Expense(models.Model):
-    def __str__(self):
-        return f'{self.user}_{self.date}_{self.amount} toman'
-
-class Income(models.Model):
-    def __str__(self):
-        return f'{self.user}_{self.date}_{self.amount} toman'
-
 class GymAccount(Person):
     age = models.IntegerField(null=True)
     sport_field = models.CharField(max_length=1, choices=Sport_Field, null=True)
@@ -59,9 +44,24 @@ class Coach(GymAccount):
         return f'{self.name }_{self.last_name} has {self.salary} toman salary'
 
 # Athlete class
-class Athlete(Person):
+class Athlete(GymAccount):
     last_payment = models.DateField(default=now)
     trainer = models.ForeignKey(Coach, on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):
         return f'{self.name }_{self.last_name}'
+
+class FinancialTradeOff(models.Model):
+    details = models.CharField(max_length=250)
+    date = models.DateTimeField()
+    amount = models.BigIntegerField()
+    user = models.ForeignKey(Person, on_delete=models.CASCADE)
+    code = models.CharField(max_length=10, default=binascii.b2a_hex(os.urandom(10)))
+
+class Expense(models.Model):
+    def __str__(self):
+        return f'{self.user}_{self.date}_{self.amount} toman'
+
+class Income(models.Model):
+    def __str__(self):
+        return f'{self.user}_{self.date}_{self.amount} toman'

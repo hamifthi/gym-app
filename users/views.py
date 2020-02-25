@@ -6,7 +6,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.hashers import make_password
 from django.core.mail import send_mail
-from users.models import Person, Token, Expense, Income
+from users.models import Person, Token, Expense, Income, Athlete, Coach
 from json import JSONEncoder
 from .choices import *
 import os, binascii
@@ -57,23 +57,34 @@ class Register(View):
             email = request.POST['email']
             username = request.POST['username']
             password = make_password(request.POST['password'])
-            age = request.POST['age']
-            sport_field = request.POST['sport_field']
-            # Here we can't normally send the sport_field for saving in DB we must send the code
-            for sport in Sport_Field:
-                if sport_field == sport[1]:
-                    sport_field = sport[0]
-            # Here we can't normally send the days_of_week for saving in DB we must send the code
-            days_of_week = request.POST['days_of_week']
-            days_of_week = days_of_week.split(', ')
-            list_of_days = []
-            for day in Day_Choices:
-                if day[1].lower() in days_of_week:
-                    list_of_days.append(day[0])
-            # now we save the user normally in DB
-            user_account = Person.objects.create(name=name,last_name=last_name, email=email,
-            username=username, password=password, age=age, sport_field=sport_field,
-            days_of_week=list_of_days, code=code)
+            # if the user is athlete or coach
+            if 'age' and 'sport_field' and 'days_of_week' in request.POST:
+                age = request.POST['age']
+                sport_field = request.POST['sport_field']
+                # Here we can't normally send the sport_field for saving in DB we must send the code
+                for sport in Sport_Field:
+                    if sport_field == sport[1]:
+                        sport_field = sport[0]
+                # Here we can't normally send the days_of_week for saving in DB we must send the code
+                days_of_week = request.POST['days_of_week']
+                days_of_week = days_of_week.split(', ')
+                list_of_days = []
+                for day in Day_Choices:
+                    if day[1].lower() in days_of_week:
+                        list_of_days.append(day[0])
+                # if the user is coach
+                if 'salary' in request.POST:
+                    salary = request.POST['salary']
+                    user_account = Coach.objects.create(name=name,last_name=last_name, email=email,
+                    username=username, password=password, age=age, sport_field=sport_field,
+                    days_of_week=list_of_days, salary=salary, code=code)
+                else:
+                    user_account = Athlete.objects.create(name=name,last_name=last_name, email=email,
+                    username=username, password=password, age=age, sport_field=sport_field,
+                    days_of_week=list_of_days, code=code)
+            else:
+                user_account = Person.objects.create(name=name,last_name=last_name, email=email,
+                username=username, password=password, code=code)
             subject = 'Activating your account'
             message = f"To activate your account please click on this link \
                 {request.build_absolute_uri('/register/')}?email={email}&code={code}"
@@ -91,10 +102,21 @@ class Register(View):
         if 'code' in request.GET:
             email = request.GET['email']
             code = request.GET['code']
+            code_exist = False
             # person exist and we activate it
             if Person.objects.filter(code=code).exists():
                 user = Person.objects.get(email=email)
                 Person.objects.filter(code=code).update(code=None)
+                code_exist=True
+            elif Athlete.objects.filter(code=code).exits():
+                user = Athlete.objects.get(email=email)
+                Athlete.objects.filter(code=code).update(code=None)
+                code_exist=True
+            elif Coach.objects.filter(code=code).exits():
+                user = Athlete.objects.get(email=email)
+                Coach.objects.filter(code=code).update(code=None)
+                code_exist=True
+            if code_exist:
                 token = binascii.b2a_hex(os.urandom(64))
                 token = Token.objects.create(user=user, token=token)
                 context = {'message': f'Your account has been activated please save your token is \
@@ -106,7 +128,12 @@ class Register(View):
         # load the register page for the first visit
         else:
             context = {'message': ''}
-            return render(request, 'register.html', context)
+            if 'athlete' in request.get_full_path():
+                return render(request, 'athlete_register.html', context)
+            elif 'coach' in request.get_full_path():
+                return render(request, 'coach_register.html', context)
+            else:
+                return render(request, 'register.html', context)
 
 class Index(View):
     def get(self, request, *args, **kwargs):
