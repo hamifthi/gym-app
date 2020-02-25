@@ -26,10 +26,11 @@ class Token(models.Model):
     def __str__(self):
             return f'{self.user.name}_token'
 
-class GymAccount(Person):
+class GymAccount(models.Model):
     age = models.IntegerField(null=True)
     sport_field = models.CharField(max_length=1, choices=Sport_Field, null=True)
     days_of_week = MultiSelectField(choices=Day_Choices, null=True)
+    user = models.OneToOneField(Person, on_delete=models.CASCADE)
 
     class Meta:
         abstract = True
@@ -41,7 +42,7 @@ class Coach(GymAccount):
     # end_time = models.TimeField(null=False, blank=False)
     
     def __str__(self):
-        return f'{self.name }_{self.last_name} has {self.salary} toman salary'
+        return f'{self.user.name }_{self.user.last_name} has {self.user.salary} toman salary'
 
 # Athlete class
 class Athlete(GymAccount):
@@ -49,7 +50,7 @@ class Athlete(GymAccount):
     trainer = models.ForeignKey(Coach, on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):
-        return f'{self.name }_{self.last_name}'
+        return f'{self.user.name }_{self.user.last_name}'
 
 class FinancialTradeOff(models.Model):
     details = models.CharField(max_length=250)
