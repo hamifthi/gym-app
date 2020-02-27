@@ -108,6 +108,12 @@ class AthleteRegister(View):
         else:
             context = {'This user is not registered yet'}
             return render(request,  'athlete_register.html', context)
+        coach_email = request.POST['coach_email']
+        if Person.objects.filter(email=coach_email).exists():
+            coach = Person.objects.filter(email=coach_email).get()
+        else:
+            context = {'This coach is not registered yet'}
+            return render(request,  'athlete_register.html', context)
         age = request.POST['age']
         sport_field = request.POST['sport_field']
         # Here we can't normally send the sport_field for saving in DB we must send the code
@@ -122,7 +128,7 @@ class AthleteRegister(View):
             if day[1].lower() in days_of_week:
                 list_of_days.append(day[0])
         user_account = Athlete.objects.create(age=age, sport_field=sport_field,
-                                    days_of_week=list_of_days, user=user)
+                                    days_of_week=list_of_days, user=user, trainer=coach)
 
         context = {'message' : 'This user become an athlete in your gym now'}
         return render(request, 'athlete_register.html', context)

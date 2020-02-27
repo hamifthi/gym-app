@@ -47,7 +47,8 @@ class Coach(GymAccount):
 # Athlete class
 class Athlete(GymAccount):
     last_payment = models.DateField(default=now)
-    trainer = models.ForeignKey(Coach, on_delete=models.SET_NULL, null=True, blank=True)
+    trainer = models.ForeignKey(Person, on_delete=models.SET_NULL, null=True, blank=True,
+    related_name='user_trainer')
 
     def __str__(self):
         return f'{self.user.name }_{self.user.last_name}'
