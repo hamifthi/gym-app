@@ -182,10 +182,13 @@ class Index(View):
 @method_decorator(csrf_exempt, name='dispatch')
 class SubmitIncome(View):
     def post(self, request, *args, **kwargs):
+        print(request.POST)
         token = request.POST['token']
-        user = Person.objects.filter(token=token).get()
+        user = Token.objects.filter(token=token).get().user
         if 'date' not in request.POST:
             date = datetime.datetime.now()
+        else:
+            date = request.POST['date']
         Income.objects.create(user=user, amount=request.POST['amount'],
         details=request.POST['details'], date=date)
         return JsonResponse({
@@ -196,9 +199,11 @@ class SubmitIncome(View):
 class SubmitExpense(View):
     def post(self, request, *args, **kwargs):
         token = request.POST['token']
-        user = Person.objects.filter(token=token).get()
+        user = Token.objects.filter(token=token).get().user
         if 'date' not in request.POST:
             date = datetime.datetime.now()
+        else:
+            date = request.POST['date']
         Expense.objects.create(user=user, amount=request.POST['amount'],
         details=request.POST['details'], date=date)
         return JsonResponse({

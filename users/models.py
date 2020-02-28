@@ -20,8 +20,8 @@ class Person(models.Model):
                 return f'{self.name}_{self.last_name}'
 
 class Token(models.Model):
-    user = models.OneToOneField(Person, on_delete=models.CASCADE)
     token = models.CharField(max_length=64)
+    user = models.OneToOneField(Person, on_delete=models.CASCADE)
     
     def __str__(self):
             return f'{self.user.name}_token'
@@ -54,16 +54,21 @@ class Athlete(GymAccount):
         return f'{self.user.name }_{self.user.last_name}'
 
 class FinancialTradeOff(models.Model):
-    details = models.CharField(max_length=250)
+    details = models.CharField(max_length=250, null=True)
     date = models.DateTimeField()
-    amount = models.BigIntegerField()
-    user = models.ForeignKey(Person, on_delete=models.CASCADE)
-    code = models.CharField(max_length=10, default=binascii.b2a_hex(os.urandom(10)))
+    amount = models.BigIntegerField(null=True)
+    user = models.ForeignKey(Person, on_delete=models.CASCADE, null=True)
+    def random_code():
+        return binascii.b2a_hex(os.urandom(10))
+    code = models.CharField(max_length=24, default=random_code)
 
-class Expense(models.Model):
-    def __str__(self):
-        return f'{self.user}_{self.date}_{self.amount} toman'
+    class Meta:
+        abstract = True
 
-class Income(models.Model):
+class Income(FinancialTradeOff):
     def __str__(self):
-        return f'{self.user}_{self.date}_{self.amount} toman'
+        return f'{self.user} {self.date} {self.amount} toman'
+
+class Expense(FinancialTradeOff):
+    def __str__(self):
+        return f'{self.user} {self.date} {self.amount} toman'
