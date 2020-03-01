@@ -20,7 +20,7 @@ class Person(models.Model):
                 return f'{self.name}_{self.last_name}'
 
 class Token(models.Model):
-    token = models.CharField(max_length=64)
+    token = models.CharField(max_length=300)
     user = models.OneToOneField(Person, on_delete=models.CASCADE)
     
     def __str__(self):
@@ -59,8 +59,8 @@ class FinancialTradeOff(models.Model):
     amount = models.BigIntegerField(null=True)
     user = models.ForeignKey(Person, on_delete=models.CASCADE, null=True)
     def random_code():
-        return binascii.b2a_hex(os.urandom(10))
-    code = models.CharField(max_length=24, default=random_code)
+        return binascii.b2a_hex(os.urandom(20)).decode('utf-8')
+    code = models.CharField(max_length=48, default=random_code)
 
     class Meta:
         abstract = True

@@ -12,6 +12,7 @@ from .choices import *
 import os, binascii
 import requests
 import datetime
+import jwt
 
 def get_client_ip(request):
     x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
@@ -51,7 +52,7 @@ class Register(View):
 
         # new user
         if not Person.objects.filter(username = request.POST['username']).exists():
-            code = binascii.b2a_hex(os.urandom(28))
+            code = binascii.b2a_hex(os.urandom(28)).decode('utf-8')
             name = request.POST['name']
             last_name = request.POST['last_name']
             email = request.POST['email']
@@ -80,8 +81,13 @@ class Register(View):
             if Person.objects.filter(code=code).exists():
                 user = Person.objects.get(email=email)
                 Person.objects.filter(code=code).update(code=None)
-                token = binascii.b2a_hex(os.urandom(64))
-                token = Token.objects.create(user=user, token=token)
+                payload = {
+                    'id' : user.id,
+                    'email': user.email
+                }
+                jwt_token = jwt.encode(payload, settings.SECRET_KEY)
+                print(jwt_token)
+                token = Token.objects.create(user=user, token=jwt_token)
                 context = {'message': f'Your account has been activated please save your token is \
                 {token.token} because it will not show to you again'}
                 return render(request, 'register.html', context)
