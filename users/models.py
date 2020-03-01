@@ -42,7 +42,7 @@ class Coach(GymAccount):
     # end_time = models.TimeField(null=False, blank=False)
     
     def __str__(self):
-        return f'{self.user.name }_{self.user.last_name} has {self.salary} toman salary'
+        return f'{self.user.name }_{self.user.last_name}'
 
 # Athlete class
 class Athlete(GymAccount):

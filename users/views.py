@@ -112,13 +112,15 @@ class AthleteRegister(View):
         if Person.objects.filter(email=email).exists():
             user = Person.objects.filter(email=email).get()
         else:
-            context = {'This user is not registered yet'}
+            context = {'message' : 'This user is not registered yet'}
             return render(request,  'athlete_register.html', context)
         coach_email = request.POST['coach_email']
         if Person.objects.filter(email=coach_email).exists():
             coach = Person.objects.filter(email=coach_email).get()
+            # accessing to the coach attributes
+            attributes = Coach.objects.filter(user=coach).get()
         else:
-            context = {'This coach is not registered yet'}
+            context = {'message' : 'This coach is not registered yet'}
             return render(request,  'athlete_register.html', context)
         age = request.POST['age']
         sport_field = request.POST['sport_field']
@@ -126,6 +128,10 @@ class AthleteRegister(View):
         for sport in Sport_Field:
             if sport_field == sport[1]:
                 sport_field = sport[0]
+                # match the sport field of coach with athlete
+                if sport_field != attributes.sport_field:
+                    context = {'message' : 'This coach doesn\'t work in this field'}
+                    return render(request,  'athlete_register.html', context)
         # Here we can't normally send the days_of_week for saving in DB we must send the code
         days_of_week = request.POST['days_of_week']
         days_of_week = days_of_week.split(', ')
@@ -155,7 +161,7 @@ class CoachRegister(View):
         if Person.objects.filter(email=email).exists():
             user = Person.objects.filter(email=email).get()
         else:
-            context = {'This user is not registered yet'}
+            context = {'message' : 'This user is not registered yet'}
             return render(request,  'coach_register.html', context)
         age = request.POST['age']
         sport_field = request.POST['sport_field']
