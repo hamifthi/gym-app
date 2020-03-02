@@ -6,8 +6,10 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.hashers import make_password
 from django.core.mail import send_mail
+from django.db.models import Count, Sum
 from users.models import Person, Token, Expense, Income, Athlete, Coach
 from json import JSONEncoder
+from dateutil import relativedelta
 from .choices import *
 import os, binascii
 import requests
@@ -99,7 +101,7 @@ class Register(View):
             context = {'message': ''}
             return render(request, 'register.html', context)
                 
-
+@method_decorator(csrf_exempt, name='dispatch')
 class AthleteRegister(View):
     def post(self, request, *args, **kwargs):
         if 'requestcode' in request.POST:
@@ -149,6 +151,7 @@ class AthleteRegister(View):
         context = {'message': ''}
         return render(request, 'athlete_register.html', context)
 
+@method_decorator(csrf_exempt, name='dispatch')
 class CoachRegister(View):
     def post(self, request, *args, **kwargs):
         if 'requestcode' in request.POST:
@@ -186,6 +189,81 @@ class CoachRegister(View):
         context = {'message': ''}
         return render(request, 'coach_register.html', context)
 
+@method_decorator(csrf_exempt, name='dispatch')
+class IncomeTransactionReport(View):
+    def post(self, request, *args, **kwargs):
+        token = request.POST['token']
+        user = Token.objects.filter(token=token).get().user
+        if 'from' and 'to' in request.POST:
+            income = Income.objects.filter(user=user,
+            date__gte=datetime.date.fromisoformat(request.POST['from']),
+            date__lte=datetime.date.fromisoformat(request.POST['to']))\
+                .aggregate(Count('amount'), Sum('amount'))
+        elif 'from' in request.POST:
+            income = Income.objects.filter(user=user,
+            date__gte=datetime.date.fromisoformat(request.POST['from']),
+            date__lte=datetime.date.fromisoformat(request.POST['from']) + \
+            relativedelta.relativedelta(months=+1)).aggregate(Count('amount'),
+            Sum('amount'))
+        else:
+            income = Income.objects.filter(user=user).aggregate(Count('amount'), Sum('amount'))
+        return JsonResponse({'income': income}, encoder=JSONEncoder)
+
+@method_decorator(csrf_exempt, name='dispatch')
+class ExpenseTransactionReport(View):
+    def post(self, request, *args, **kwargs):
+        token = request.POST['token']
+        user = Token.objects.filter(token=token).get().user
+        if 'from' and 'to' in request.POST:
+            expense = Expense.objects.filter(user=user,
+            date__gte=datetime.date.fromisoformat(request.POST['from']),
+            date__lte=datetime.date.fromisoformat(request.POST['to']))\
+                .aggregate(Count('amount'), Sum('amount'))
+        elif 'from' in request.POST:
+            expense = Expense.objects.filter(user=user,
+            date__gte=datetime.date.fromisoformat(request.POST['from']),
+            date__lte=datetime.date.fromisoformat(request.POST['from']) + \
+            relativedelta.relativedelta(months=+1)).aggregate(Count('amount'),
+            Sum('amount'))
+        else:
+            expense = Expense.objects.filter(user=user).aggregate(Count('amount'), Sum('amount'))
+        return JsonResponse({'expense': expense}, encoder=JSONEncoder)
+
+@method_decorator(csrf_exempt, name='dispatch')
+class TotalTransactionReport(View):
+    def post(self, request, *args, **kwargs):
+        token = request.POST['token']
+        user = Token.objects.filter(token=token).get().user
+        if 'from' and 'to' in request.POST:
+            income = Income.objects.filter(user=user,
+            date__gte=datetime.date.fromisoformat(request.POST['from']),
+            date__lte=datetime.date.fromisoformat(request.POST['to']))\
+                .aggregate(Count('amount'), Sum('amount'))
+            expense = Expense.objects.filter(user=user,
+            date__gte=datetime.date.fromisoformat(request.POST['from']),
+            date__lte=datetime.date.fromisoformat(request.POST['to']))\
+                .aggregate(Count('amount'), Sum('amount'))
+        elif 'from' in request.POST:
+            income = Income.objects.filter(user=user,
+            date__gte=datetime.date.fromisoformat(request.POST['from']),
+            date__lte=datetime.date.fromisoformat(request.POST['from']) + \
+            relativedelta.relativedelta(months=+1)).aggregate(Count('amount'),
+            Sum('amount'))
+            expense = Expense.objects.filter(user=user,
+            date__gte=datetime.date.fromisoformat(request.POST['from']),
+            date__lte=datetime.date.fromisoformat(request.POST['from']) + \
+            relativedelta.relativedelta(months=+1)).aggregate(Count('amount'),
+            Sum('amount'))
+        else:
+            income = Income.objects.filter(user=user).aggregate(Count('amount'), Sum('amount'))
+            expense = Expense.objects.filter(user=user).aggregate(Count('amount'), Sum('amount'))
+        info = {}
+        info['income'] = income
+        info['expense'] = expense
+        info['total'] = income['amount__sum'] - expense['amount__sum']
+        return JsonResponse(info, encoder=JSONEncoder)
+
+@method_decorator(csrf_exempt, name='dispatch')
 class Index(View):
     def get(self, request, *args, **kwargs):
         context = {}
