@@ -23,7 +23,7 @@ class Token(models.Model):
     user = models.OneToOneField(Person, on_delete=models.CASCADE)
     
     def __str__(self):
-            return f'{self.user.name}_token'
+            return f'{self.user.email}_token'
 
 class GymAccount(models.Model):
     age = models.IntegerField(null=True)
