@@ -11,4 +11,6 @@ urlpatterns = [
     path('report/income', views.IncomeTransactionReport.as_view(), name='income_report'),
     path('report/expense', views.ExpenseTransactionReport.as_view(), name='expense_report'),
     path('report/total', views.TotalTransactionReport.as_view(), name='total_transaction_report'),
+    path('reset_password', views.ResetPassword.as_view(), name='reset_password'),
+    path('login', views.Login.as_view(), name='login'),
 ]

@@ -1,10 +1,10 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect, reverse
 from django.views import View
 from django.conf import settings
 from django.http import JsonResponse, HttpResponse
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth.hashers import make_password
+from django.contrib.auth.hashers import make_password, check_password
 from django.core.mail import send_mail
 from django.db.models import Count, Sum
 from users.models import Person, Token, Expense, Income, Athlete, Coach
@@ -80,9 +80,9 @@ class Register(View):
             email = request.GET['email']
             code = request.GET['code']
             # person exist and we activate it
-            if Person.objects.filter(code=code).exists():
+            if Person.objects.get(code=code).exists():
                 user = Person.objects.get(email=email)
-                Person.objects.filter(code=code).update(code=None)
+                Person.objects.get(code=code).update(code=None)
                 payload = {
                     'id' : user.id,
                     'email': user.email
@@ -111,16 +111,16 @@ class AthleteRegister(View):
                 return render(request,  'athlete_register.html', context)
         # get attributes
         email = request.POST['email']
-        if Person.objects.filter(email=email).exists():
-            user = Person.objects.filter(email=email).get()
+        if Person.objects.get(email=email).exists():
+            user = Person.objects.get(email=email)
         else:
             context = {'message' : 'This user is not registered yet'}
             return render(request,  'athlete_register.html', context)
         coach_email = request.POST['coach_email']
-        if Person.objects.filter(email=coach_email).exists():
-            coach = Person.objects.filter(email=coach_email).get()
+        if Person.objects.get(email=coach_email).exists():
+            coach = Person.objects.get(email=coach_email)
             # accessing to the coach attributes
-            attributes = Coach.objects.filter(user=coach).get()
+            attributes = Coach.objects.get(user=coach)
         else:
             context = {'message' : 'This coach is not registered yet'}
             return render(request,  'athlete_register.html', context)
@@ -161,8 +161,8 @@ class CoachRegister(View):
                 return render(request, 'coach_register.html', context)
         # get attributes
         email = request.POST['email']
-        if Person.objects.filter(email=email).exists():
-            user = Person.objects.filter(email=email).get()
+        if Person.objects.get(email=email).exists():
+            user = Person.objects.get(email=email)
         else:
             context = {'message' : 'This user is not registered yet'}
             return render(request,  'coach_register.html', context)
@@ -264,6 +264,37 @@ class TotalTransactionReport(View):
         return JsonResponse(info, encoder=JSONEncoder)
 
 @method_decorator(csrf_exempt, name='dispatch')
+class Login(View):
+    def post(self, request, *args, **kwargs):
+        email = request.POST['email']
+        password = request.POST['password']
+        if Person.objects.filter(email=email).exists():
+            user = Person.objects.get(email=email)
+            if check_password(password, user.password):
+                token = Token.objects.get(user=user).token
+                context = {'token': token}
+                return render(request, 'login.html', context)
+            else:
+                context = {'message': 'You entered wrong password please try again or if you forgot your\
+                    password go to forgot pass page'}
+                return render(request, 'login.html', context)
+        else:
+            context = {'message': 'You are not sign up yet please first sign up.'}
+            return redirect(reverse('register'))
+
+    def get(self, request, *args, **kwargs):
+        return render(request, 'login.html')
+
+@method_decorator(csrf_exempt, name='dispatch')
+class ResetPassword(View):
+    def post(self, request, *args, **kwargs):
+        return render(request, 'resetpassword.html')
+
+    def get(self, request, *args, **kwargs):
+        return render(request, 'resetpassword.html')
+
+
+@method_decorator(csrf_exempt, name='dispatch')
 class Index(View):
     def get(self, request, *args, **kwargs):
         context = {}
@@ -274,7 +305,7 @@ class SubmitIncome(View):
     def post(self, request, *args, **kwargs):
         print(request.POST)
         token = request.POST['token']
-        user = Token.objects.filter(token=token).get().user
+        user = Token.objects.get(token=token).user
         if 'date' not in request.POST:
             date = datetime.datetime.now()
         else:
@@ -289,7 +320,7 @@ class SubmitIncome(View):
 class SubmitExpense(View):
     def post(self, request, *args, **kwargs):
         token = request.POST['token']
-        user = Token.objects.filter(token=token).get().user
+        user = Token.objects.get(token=token).user
         if 'date' not in request.POST:
             date = datetime.datetime.now()
         else:
