@@ -11,7 +11,6 @@ import datetime
 class Person(models.Model):
     name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
-    username = models.CharField(max_length=50, null=True, unique=True)
     email = models.EmailField(max_length=100, null=True, unique=True)
     password = models.CharField(max_length=50, null=True)
     code = models.CharField(max_length=28, null=True)
