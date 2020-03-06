@@ -40,6 +40,7 @@ def google_recaptcha_verify(request):
 class Register(View):
     def post(self, request, *args, **kwargs):
         # user has the requestcode
+        print(request.POST['requestcode'])
         if 'requestcode' in request.POST:
             if not google_recaptcha_verify(request):
                 context = {'message' : 'the captcha is not correct maybe you are robot? please enter the\
@@ -53,15 +54,14 @@ class Register(View):
             return render(request, 'register.html', context)
 
         # new user
-        if not Person.objects.filter(username = request.POST['username']).exists():
+        if not Person.objects.filter(email = request.POST['email']).exists():
             code = binascii.b2a_hex(os.urandom(28)).decode('utf-8')
             name = request.POST['name']
             last_name = request.POST['last_name']
             email = request.POST['email']
-            username = request.POST['username']
             password = make_password(request.POST['password'])
             user_account = Person.objects.create(name=name,last_name=last_name, email=email,
-            username=username, password=password, code=code)
+            password=password, code=code)
             subject = 'Activating your account'
             message = f"To activate your account please click on this link \
                 {request.build_absolute_uri('/register/')}?email={email}&code={code}"
@@ -71,9 +71,9 @@ class Register(View):
             context = {'message' : 'The activation link has been sent to your account'}
             return render(request, 'register.html', context)
         else:
-            context = {'message': 'This username has used before, please use another username'}
+            context = {'message': 'This email has used before, please use another email'}
             return render(request, 'register.html', context)
-
+    
     def get(self, request, *args, **kwargs):
         # user click on activation link
         if 'code' in request.GET:
