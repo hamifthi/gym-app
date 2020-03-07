@@ -40,18 +40,11 @@ def google_recaptcha_verify(request):
 class Register(View):
     def post(self, request, *args, **kwargs):
         # user has the requestcode
-        print(request.POST['requestcode'])
         if 'requestcode' in request.POST:
             if not google_recaptcha_verify(request):
-                context = {'message' : 'the captcha is not correct maybe you are robot? please enter the\
-                    code correctly'}
-                return render(request, 'register.html', context)
-
-        # email is dupilicate
-        if Person.objects.filter(email = request.POST['email']).exists():
-            context = {'message' : 'this email has used before, if this is your email go to forgot password\
-                and change your password'}
-            return render(request, 'register.html', context)
+                context = {'message' : 'the captcha is not correct maybe you are robot?\
+                     please enter the code correctly'}
+                return render(request, 'register.html', context, status=429)
 
         # new user
         if not Person.objects.filter(email = request.POST['email']).exists():
@@ -60,7 +53,7 @@ class Register(View):
             last_name = request.POST['last_name']
             email = request.POST['email']
             password = make_password(request.POST['password'])
-            user_account = Person.objects.create(name=name,last_name=last_name, email=email,
+            user_account = Person.objects.create(name=name, last_name=last_name, email=email,
             password=password, code=code)
             subject = 'Activating your account'
             message = f"To activate your account please click on this link \
@@ -71,8 +64,9 @@ class Register(View):
             context = {'message' : 'The activation link has been sent to your account'}
             return render(request, 'register.html', context)
         else:
-            context = {'message': 'This email has used before, please use another email'}
-            return render(request, 'register.html', context)
+            context = {'message' : 'this email has used before, if this is your email go to forgot password\
+                and change your password'}
+            return render(request, 'register.html', context, status=409)
     
     def get(self, request, *args, **kwargs):
         # user click on activation link
@@ -88,7 +82,6 @@ class Register(View):
                     'email': user.email
                 }
                 jwt_token = jwt.encode(payload, settings.SECRET_KEY)
-                print(jwt_token)
                 token = Token.objects.create(user=user, token=jwt_token)
                 context = {'message': f'Your account has been activated please save your token is \
                 {token.token} because it will not show to you again'}

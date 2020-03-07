@@ -17,8 +17,10 @@ class PersonTestCase(TestCase):
     def test_person_display_name_in_admin_site(self):
         user = Person.objects.get(name='hamed')
         token = Token.objects.get(user=user)
-        coach = Person.objects.get(name='hamed')
-        athlete = Person.objects.get(name='hamid')
+        coach_person = Person.objects.get(name='hamed')
+        coach = Coach.objects.get(user=coach_person)
+        athlete_person = Person.objects.get(name='hamid')
+        athlete = Athlete.objects.get(user=athlete_person)
         self.assertEqual(str(user), 'hamed_fathi')
         self.assertEqual(str(token), 'hamed.fathi@gmail.com_token')
         self.assertEqual(str(coach), 'hamed_fathi')
