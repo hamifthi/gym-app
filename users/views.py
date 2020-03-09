@@ -113,7 +113,7 @@ class AthleteRegister(View):
             user = Person.objects.get(email=email)
         else:
             context = {'message' : 'This user is not registered yet'}
-            return render(request,  'athlete_register.html', context)
+            return render(request,  'athlete_register.html', context, status=404)
         coach_email = request.POST['coach_email']
         if Person.objects.filter(email=coach_email).exists():
             coach = Person.objects.get(email=coach_email)
@@ -121,7 +121,7 @@ class AthleteRegister(View):
             attributes = Coach.objects.get(user=coach)
         else:
             context = {'message' : 'This coach is not registered yet'}
-            return render(request,  'athlete_register.html', context)
+            return render(request,  'athlete_register.html', context, status=404)
         age = request.POST['age']
         sport_field = request.POST['sport_field']
         # Here we can't normally send the sport_field for saving in DB we must send the code
@@ -131,7 +131,7 @@ class AthleteRegister(View):
                 # match the sport field of coach with athlete
                 if sport_field != attributes.sport_field:
                     context = {'message' : 'This coach doesn\'t work in this field'}
-                    return render(request,  'athlete_register.html', context)
+                    return render(request,  'athlete_register.html', context, status=406)
         # Here we can't normally send the days_of_week for saving in DB we must send the code
         days_of_week = request.POST['days_of_week']
         days_of_week = days_of_week.split(', ')
@@ -141,7 +141,6 @@ class AthleteRegister(View):
                 list_of_days.append(day[0])
         user_account = Athlete.objects.create(age=age, sport_field=sport_field,
                                     days_of_week=list_of_days, user=user, trainer=coach)
-
         context = {'message' : 'This user become an athlete in your gym now'}
         return render(request, 'athlete_register.html', context)
         

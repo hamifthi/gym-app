@@ -1,6 +1,6 @@
 from django.test import TestCase
 from django.urls import reverse
-from users.models import Person, Token
+from users.models import Person, Token, Athlete, Coach
 from users.views import google_recaptcha_verify
 from django.conf import settings
 import os, binascii
@@ -94,3 +94,53 @@ class RegisterTest(TestCase):
         self.assertEqual(response.status_code, 404)
         self.assertEqual(response.context['message'], f'This code is unvalid, please try again')
         self.assertTemplateUsed(response, 'register.html')
+
+class AthleteRegisterTest(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.request_data = {
+            'email': 'hamed.fathi@gmail.com',
+            'coach_email': 'hamid.fathi@gmail.com',
+            'age': '23',
+            'sport_field': 'Crossfit',
+            'days_of_week': ['1', '2', '3']
+        }
+        cls.person_for_athlete = Person.objects.create(name='hamed', last_name='fathi',
+        email='hamed.fathi@gmail.com', password='sthfortest')
+        cls.person_for_coach = Person.objects.create(name='hamid', last_name='fathi',
+        email='hamid.fathi@gmail.com', password='sthelsefortest')
+        cls.coach = Coach.objects.create(age=25, sport_field='C', days_of_week=['1', '2', '3'],
+        user=cls.person_for_coach, salary=2000000)
+
+    def test_user_not_registered_yet(self):
+        AthleteRegisterTest.request_data['email'] = 'not_register@gmail.com'
+        response = self.client.post('/register/athlete', AthleteRegisterTest.request_data)
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.context['message'], 'This user is not registered yet')
+        self.assertTemplateUsed(response, 'athlete_register.html')
+
+    def test_coach_not_registered_yet(self):
+        AthleteRegisterTest.request_data['coach_email'] = 'not_register@gmail.com'
+        response = self.client.post('/register/athlete', AthleteRegisterTest.request_data)
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.context['message'], 'This coach is not registered yet')
+        self.assertTemplateUsed(response, 'athlete_register.html')
+    
+    def test_athlete_sportfield_is_different_from_coach(self):
+        AthleteRegisterTest.request_data['sport_field'] = 'Fitness'
+        response = self.client.post('/register/athlete', AthleteRegisterTest.request_data)
+        self.assertEqual(response.status_code, 406)
+        self.assertEqual(response.context['message'], 'This coach doesn\'t work in this field')
+        self.assertTemplateUsed(response, 'athlete_register.html')
+
+    def test_athlete_registration_successful(self):
+        response = self.client.post('/register/athlete', AthleteRegisterTest.request_data)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['message'], 'This user become an athlete in your gym now')
+        self.assertTemplateUsed(response, 'athlete_register.html')
+
+    def test_get_method_register_athlete_page(self):
+        response = self.client.get('/register/athlete')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['message'], '')
+        self.assertTemplateUsed(response, 'athlete_register.html')
