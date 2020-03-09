@@ -71,24 +71,29 @@ class Register(View):
     def get(self, request, *args, **kwargs):
         # user click on activation link
         if 'code' in request.GET:
-            email = request.GET['email']
-            code = request.GET['code']
-            # person exist and we activate it
-            if Person.objects.get(code=code).exists():
-                user = Person.objects.get(email=email)
-                Person.objects.get(code=code).update(code=None)
-                payload = {
-                    'id' : user.id,
-                    'email': user.email
-                }
-                jwt_token = jwt.encode(payload, settings.SECRET_KEY)
-                token = Token.objects.create(user=user, token=jwt_token)
-                context = {'message': f'Your account has been activated please save your token is \
-                {token.token} because it will not show to you again'}
-                return render(request, 'register.html', context)
+            # check that the code and email isn't none or empty
+            if request.GET['code'] != 'None' and request.GET['email'] != 'None':
+                email = request.GET['email']
+                code = request.GET['code']
+                # person exist and we activate it
+                if Person.objects.filter(code=code).exists():
+                    user = Person.objects.get(email=email)
+                    Person.objects.filter(code=code).update(code=None)
+                    payload = {
+                        'id' : user.id,
+                        'email': user.email
+                    }
+                    jwt_token = jwt.encode(payload, settings.SECRET_KEY)
+                    token = Token.objects.create(user=user, token=jwt_token)
+                    context = {'message': f'Your account has been activated please save your token is \
+                    {token.token} because it will not show to you again'}
+                    return render(request, 'register.html', context)
+                else:
+                    context = {'message': 'This code is unvalid, please try again'}
+                    return render(request, 'register.html', context, status=404)
             else:
-                context = {'message': 'This code is unvalid, please try again'}
-                return render(request, 'register.html', context)
+                context = {'message': 'Your request doesn\'t have email or code or both of them'}
+                return render(request, 'register.html', context, status=404)
         # load the register page for the first visit
         else:
             context = {'message': ''}
@@ -104,13 +109,13 @@ class AthleteRegister(View):
                 return render(request,  'athlete_register.html', context)
         # get attributes
         email = request.POST['email']
-        if Person.objects.get(email=email).exists():
+        if Person.objects.filter(email=email).exists():
             user = Person.objects.get(email=email)
         else:
             context = {'message' : 'This user is not registered yet'}
             return render(request,  'athlete_register.html', context)
         coach_email = request.POST['coach_email']
-        if Person.objects.get(email=coach_email).exists():
+        if Person.objects.filter(email=coach_email).exists():
             coach = Person.objects.get(email=coach_email)
             # accessing to the coach attributes
             attributes = Coach.objects.get(user=coach)
@@ -154,7 +159,7 @@ class CoachRegister(View):
                 return render(request, 'coach_register.html', context)
         # get attributes
         email = request.POST['email']
-        if Person.objects.get(email=email).exists():
+        if Person.objects.filter(email=email).exists():
             user = Person.objects.get(email=email)
         else:
             context = {'message' : 'This user is not registered yet'}
