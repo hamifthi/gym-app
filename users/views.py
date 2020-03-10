@@ -162,7 +162,7 @@ class CoachRegister(View):
             user = Person.objects.get(email=email)
         else:
             context = {'message' : 'This user is not registered yet'}
-            return render(request,  'coach_register.html', context)
+            return render(request,  'coach_register.html', context, status=404)
         age = request.POST['age']
         sport_field = request.POST['sport_field']
         # Here we can't normally send the sport_field for saving in DB we must send the code
@@ -185,6 +185,36 @@ class CoachRegister(View):
     def get(self, request, *args, **kwargs):
         context = {'message': ''}
         return render(request, 'coach_register.html', context)
+
+@method_decorator(csrf_exempt, name='dispatch')
+class SubmitIncome(View):
+    def post(self, request, *args, **kwargs):
+        token = request.POST['token']
+        user = Token.objects.get(token=token).user
+        if 'date' not in request.POST:
+            date = datetime.datetime.now()
+        else:
+            date = request.POST['date']
+        Income.objects.create(user=user, amount=request.POST['amount'],
+        details=request.POST['details'], date=date)
+        return JsonResponse({
+            'status': 'ok'
+        }, encoder=JSONEncoder)
+
+@method_decorator(csrf_exempt, name='dispatch')
+class SubmitExpense(View):
+    def post(self, request, *args, **kwargs):
+        token = request.POST['token']
+        user = Token.objects.get(token=token).user
+        if 'date' not in request.POST:
+            date = datetime.datetime.now()
+        else:
+            date = request.POST['date']
+        Expense.objects.create(user=user, amount=request.POST['amount'],
+        details=request.POST['details'], date=date)
+        return JsonResponse({
+            'status': 'ok'
+        }, encoder=JSONEncoder)
 
 @method_decorator(csrf_exempt, name='dispatch')
 class IncomeTransactionReport(View):
@@ -296,34 +326,3 @@ class Index(View):
     def get(self, request, *args, **kwargs):
         context = {}
         return render(request, 'index.html', context)
-
-@method_decorator(csrf_exempt, name='dispatch')
-class SubmitIncome(View):
-    def post(self, request, *args, **kwargs):
-        print(request.POST)
-        token = request.POST['token']
-        user = Token.objects.get(token=token).user
-        if 'date' not in request.POST:
-            date = datetime.datetime.now()
-        else:
-            date = request.POST['date']
-        Income.objects.create(user=user, amount=request.POST['amount'],
-        details=request.POST['details'], date=date)
-        return JsonResponse({
-            'status': 'ok'
-        }, encoder=JSONEncoder)
-
-@method_decorator(csrf_exempt, name='dispatch')
-class SubmitExpense(View):
-    def post(self, request, *args, **kwargs):
-        token = request.POST['token']
-        user = Token.objects.get(token=token).user
-        if 'date' not in request.POST:
-            date = datetime.datetime.now()
-        else:
-            date = request.POST['date']
-        Expense.objects.create(user=user, amount=request.POST['amount'],
-        details=request.POST['details'], date=date)
-        return JsonResponse({
-            'status': 'ok'
-        }, encoder=JSONEncoder)

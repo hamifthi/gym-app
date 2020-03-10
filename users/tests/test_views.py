@@ -1,9 +1,9 @@
 from django.test import TestCase
 from django.urls import reverse
-from users.models import Person, Token, Athlete, Coach
+from users.models import Person, Token, Athlete, Coach, Income, Expense
 from users.views import google_recaptcha_verify
 from django.conf import settings
-import os, binascii
+import os, binascii, datetime, jwt
 
 class RegisterTest(TestCase):
     @classmethod
@@ -144,3 +144,96 @@ class AthleteRegisterTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.context['message'], '')
         self.assertTemplateUsed(response, 'athlete_register.html')
+
+class CoachRegisterTest(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.request_data = {
+            'email': 'hamid.fathi@gmail.com',
+            'age': '23',
+            'sport_field': 'Crossfit',
+            'days_of_week': ['1', '2', '3'],
+            'salary': 2000000
+        }
+        cls.person_for_coach = Person.objects.create(name='hamid', last_name='fathi',
+        email='hamid.fathi@gmail.com', password='sthelsefortest')
+
+    def test_coach_not_registered_yet(self):
+        CoachRegisterTest.request_data['email'] = 'not_register@gmail.com'
+        response = self.client.post('/register/coach', CoachRegisterTest.request_data)
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.context['message'], 'This user is not registered yet')
+        self.assertTemplateUsed(response, 'coach_register.html')
+        CoachRegisterTest.request_data['email'] = 'hamid.fathi@gmail.com'
+        
+    def test_coach_successful_registration(self):
+        response = self.client.post('/register/coach', CoachRegisterTest.request_data)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['message'], 'This user become a coach in your gym now')
+        self.assertTemplateUsed(response, 'coach_register.html')
+
+    def test_get_method_in_athlete(self):
+        response = self.client.get('/register/coach')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['message'], '')
+        self.assertTemplateUsed(response, 'coach_register.html')
+
+class IncomeSubmitTest(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = Person.objects.create(name='hamed', last_name='fathi',
+        email='hamed.fathi@gmail.com', password='sthfortest')
+        payload = {
+                        'id' : cls.user.id,
+                        'email': cls.user.email
+                    }
+        jwt_token = jwt.encode(payload, settings.SECRET_KEY)
+        cls.token = Token.objects.create(token=jwt_token, user=cls.user)
+        cls.data = {
+            'token': f'{cls.token.token}',
+            'amount': 200000,
+            'details': 'this is for the test'
+        }
+        
+    def test_submit_an_income_successfuly_without_a_date(self):
+        response = self.client.post('/submit/income', IncomeSubmitTest.data)
+        self.assertEqual(response.status_code, 200)
+        self.assertJSONEqual(response.content, {'status': 'ok'})
+    
+    def test_submit_an_income_successfuly_with_a_date(self):
+        IncomeSubmitTest.data['date'] = datetime.datetime.now()
+        response = self.client.post('/submit/income', IncomeSubmitTest.data)
+        self.assertEqual(response.status_code, 200)
+        self.assertJSONEqual(response.content, {'status': 'ok'})
+        income = Income.objects.all().first()
+        self.assertEqual(income.date, IncomeSubmitTest.data['date'])
+
+class ExpenseSubmitTest(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = Person.objects.create(name='hamed', last_name='fathi',
+        email='hamed.fathi@gmail.com', password='sthfortest')
+        payload = {
+                        'id' : cls.user.id,
+                        'email': cls.user.email
+                    }
+        jwt_token = jwt.encode(payload, settings.SECRET_KEY)
+        cls.token = Token.objects.create(token=jwt_token, user=cls.user)
+        cls.data = {
+            'token': f'{cls.token.token}',
+            'amount': 200000,
+            'details': 'this is for the test'
+        }
+        
+    def test_submit_an_expense_successfuly_without_a_date(self):
+        response = self.client.post('/submit/expense', ExpenseSubmitTest.data)
+        self.assertEqual(response.status_code, 200)
+        self.assertJSONEqual(response.content, {'status': 'ok'})
+    
+    def test_submit_an_expense_successfuly_with_a_date(self):
+        ExpenseSubmitTest.data['date'] = datetime.datetime.now()
+        response = self.client.post('/submit/expense', ExpenseSubmitTest.data)
+        self.assertEqual(response.status_code, 200)
+        self.assertJSONEqual(response.content, {'status': 'ok'})
+        expense = Expense.objects.all().first()
+        self.assertEqual(expense.date, ExpenseSubmitTest.data['date'])
