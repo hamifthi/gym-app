@@ -3,6 +3,7 @@ from django.urls import reverse
 from users.models import Person, Token, Athlete, Coach, Income, Expense
 from users.views import google_recaptcha_verify
 from django.conf import settings
+from django.db.models import Count, Sum
 import os, binascii, datetime, jwt
 
 class RegisterTest(TestCase):
@@ -237,3 +238,143 @@ class ExpenseSubmitTest(TestCase):
         self.assertJSONEqual(response.content, {'status': 'ok'})
         expense = Expense.objects.all().first()
         self.assertEqual(expense.date, ExpenseSubmitTest.data['date'])
+
+class IncomeTransactionReportTest(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = Person.objects.create(name='hamed', last_name='fathi',
+        email='hamed.fathi@gmail.com', password='sthfortest')
+        payload = {
+                        'id' : cls.user.id,
+                        'email': cls.user.email
+                    }
+        jwt_token = jwt.encode(payload, settings.SECRET_KEY)
+        cls.token = Token.objects.create(token=jwt_token, user=cls.user)
+        for i in range(5):
+            Income.objects.create(details=f'this is for the test{i}', date=datetime.datetime.now(),
+            amount=2000, user=cls.user)
+        cls.data = {
+            'token': f'{cls.token.token}',
+            'from': '2020-03-10',
+            'to': '2020-03-11'
+        }
+
+    def test_report_with_from_and_to(self):
+        response = self.client.post('/report/income', IncomeTransactionReportTest.data)
+        self.assertEqual(response.status_code, 200)
+        income = Income.objects.filter(user=IncomeTransactionReportTest.user)\
+            .aggregate(Count('amount'), Sum('amount'))
+        self.assertJSONEqual(response.content, {'income': income})
+
+    def test_report_with_from(self):
+        IncomeTransactionReportTest.data.pop('to')
+        response = self.client.post('/report/income', IncomeTransactionReportTest.data)
+        self.assertEqual(response.status_code, 200)
+        income = Income.objects.filter(user=IncomeTransactionReportTest.user)\
+            .aggregate(Count('amount'), Sum('amount'))
+        self.assertJSONEqual(response.content, {'income': income})
+
+    def test_report_without_from_and_to(self):
+        IncomeTransactionReportTest.data.pop('from')
+        response = self.client.post('/report/income', IncomeTransactionReportTest.data)
+        self.assertEqual(response.status_code, 200)
+        income = Income.objects.filter(user=IncomeTransactionReportTest.user)\
+            .aggregate(Count('amount'), Sum('amount'))
+        self.assertJSONEqual(response.content, {'income': income})
+
+class ExpenseTransactionReportTest(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = Person.objects.create(name='hamed', last_name='fathi',
+        email='hamed.fathi@gmail.com', password='sthfortest')
+        payload = {
+                        'id' : cls.user.id,
+                        'email': cls.user.email
+                    }
+        jwt_token = jwt.encode(payload, settings.SECRET_KEY)
+        cls.token = Token.objects.create(token=jwt_token, user=cls.user)
+        for i in range(5):
+            Expense.objects.create(details=f'this is for the test{i}', date=datetime.datetime.now(),
+            amount=2000, user=cls.user)
+        cls.data = {
+            'token': f'{cls.token.token}',
+            'from': '2020-03-10',
+            'to': '2020-03-11'
+        }
+
+    def test_report_with_from_and_to(self):
+        response = self.client.post('/report/expense', ExpenseTransactionReportTest.data)
+        self.assertEqual(response.status_code, 200)
+        expense = Expense.objects.filter(user=ExpenseTransactionReportTest.user)\
+            .aggregate(Count('amount'), Sum('amount'))
+        self.assertJSONEqual(response.content, {'expense': expense})
+
+    def test_report_with_from(self):
+        ExpenseTransactionReportTest.data.pop('to')
+        response = self.client.post('/report/expense', ExpenseTransactionReportTest.data)
+        self.assertEqual(response.status_code, 200)
+        expense = Expense.objects.filter(user=ExpenseTransactionReportTest.user)\
+            .aggregate(Count('amount'), Sum('amount'))
+        self.assertJSONEqual(response.content, {'expense': expense})
+
+    def test_report_without_from_and_to(self):
+        ExpenseTransactionReportTest.data.pop('from')
+        response = self.client.post('/report/expense', ExpenseTransactionReportTest.data)
+        self.assertEqual(response.status_code, 200)
+        expense = Expense.objects.filter(user=ExpenseTransactionReportTest.user)\
+            .aggregate(Count('amount'), Sum('amount'))
+        self.assertJSONEqual(response.content, {'expense': expense})
+
+class TotalTransactionReportTest(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = Person.objects.create(name='hamed', last_name='fathi',
+        email='hamed.fathi@gmail.com', password='sthfortest')
+        payload = {
+                        'id' : cls.user.id,
+                        'email': cls.user.email
+                    }
+        jwt_token = jwt.encode(payload, settings.SECRET_KEY)
+        cls.token = Token.objects.create(token=jwt_token, user=cls.user)
+        for i in range(5):
+            Income.objects.create(details=f'this is for the test{i}', date=datetime.datetime.now(),
+            amount=3000, user=cls.user)
+            Expense.objects.create(details=f'this is for the test{i}', date=datetime.datetime.now(),
+            amount=2000, user=cls.user)
+        cls.data = {
+            'token': f'{cls.token.token}',
+            'from': '2020-03-10',
+            'to': '2020-03-11'
+        }
+
+    def test_report_with_from_and_to(self):
+        response = self.client.post('/report/total', TotalTransactionReportTest.data)
+        self.assertEqual(response.status_code, 200)
+        income = Income.objects.filter(user=TotalTransactionReportTest.user)\
+            .aggregate(Count('amount'), Sum('amount'))
+        expense = Expense.objects.filter(user=TotalTransactionReportTest.user)\
+            .aggregate(Count('amount'), Sum('amount'))
+        self.assertJSONEqual(response.content, {'income': income, 'expense': expense,
+         'total': income['amount__sum'] - expense['amount__sum']})
+
+    def test_report_with_from(self):
+        TotalTransactionReportTest.data.pop('to')
+        response = self.client.post('/report/total', TotalTransactionReportTest.data)
+        self.assertEqual(response.status_code, 200)
+        income = Income.objects.filter(user=TotalTransactionReportTest.user)\
+            .aggregate(Count('amount'), Sum('amount'))
+        expense = Expense.objects.filter(user=TotalTransactionReportTest.user)\
+            .aggregate(Count('amount'), Sum('amount'))
+        self.assertJSONEqual(response.content, {'income': income, 'expense': expense,
+         'total': income['amount__sum'] - expense['amount__sum']})
+
+    def test_report_without_from_and_to(self):
+        TotalTransactionReportTest.data.pop('from')
+        response = self.client.post('/report/total', TotalTransactionReportTest.data)
+        self.assertEqual(response.status_code, 200)
+        income = Income.objects.filter(user=TotalTransactionReportTest.user)\
+            .aggregate(Count('amount'), Sum('amount'))
+        expense = Expense.objects.filter(user=TotalTransactionReportTest.user)\
+            .aggregate(Count('amount'), Sum('amount'))
+        self.assertJSONEqual(response.content, {'income': income, 'expense': expense,
+         'total': income['amount__sum'] - expense['amount__sum']})

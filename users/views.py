@@ -219,6 +219,7 @@ class SubmitExpense(View):
 @method_decorator(csrf_exempt, name='dispatch')
 class IncomeTransactionReport(View):
     def post(self, request, *args, **kwargs):
+        # add other situations whether if the user doesn't exist or there are no transactions
         token = request.POST['token']
         user = Token.objects.filter(token=token).get().user
         if 'from' and 'to' in request.POST:
