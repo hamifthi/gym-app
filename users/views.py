@@ -13,6 +13,7 @@ from .utils import user_recaptcha_fails
 from dateutil import relativedelta
 from json import JSONEncoder
 from .choices import *
+from .forms import *
 
 import os, binascii
 import requests
@@ -29,16 +30,15 @@ class Register(View):
             return render(request, 'register.html', context, status=429)
         # new user
         if not Person.objects.filter(email = request.POST['email']).exists():
-            code = binascii.b2a_hex(os.urandom(28)).decode('utf-8')
             name = request.POST['name']
             last_name = request.POST['last_name']
             email = request.POST['email']
             password = make_password(request.POST['password'])
             user_account = Person.objects.create(name=name, last_name=last_name, email=email,
-            password=password, code=code)
+            password=password)
             subject = 'Activating your account'
             message = f"To activate your account please click on this link \
-                {request.build_absolute_uri('/register/')}?email={email}&code={code}"
+                {request.build_absolute_uri('/register/')}?email={email}&code={user_account.code}"
             email_from = settings.EMAIL_HOST_USER
             recipient_list = [email]
             send_mail(subject, message, email_from, recipient_list)
@@ -77,8 +77,9 @@ class Register(View):
                 return render(request, 'register.html', context, status=404)
         # load the register page for the first visit
         else:
+
             context = {'message': ''}
-            return render(request, 'register.html', context)
+            return render(request, 'register.html', {'context': context, 'form': RegisterForm()})
                 
 @method_decorator(csrf_exempt, name='dispatch')
 class AthleteRegister(View):

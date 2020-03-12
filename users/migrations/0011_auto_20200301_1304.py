@@ -14,11 +14,11 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='expense',
             name='code',
-            field=models.CharField(default=users.models.FinancialTradeOff.random_code, max_length=48),
+            field=models.CharField(default=users.utils.random_code, max_length=48),
         ),
         migrations.AlterField(
             model_name='income',
             name='code',
-            field=models.CharField(default=users.models.FinancialTradeOff.random_code, max_length=48),
+            field=models.CharField(default=users.utils.random_code, max_length=48),
         ),
     ]

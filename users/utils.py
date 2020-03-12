@@ -1,6 +1,7 @@
 from django.conf import settings
 
 import requests
+import os, binascii
 
 def get_client_ip(request):
     x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
@@ -26,3 +27,6 @@ def user_recaptcha_fails(request):
     if 'requestcode' in request.POST:
             if not google_recaptcha_verify(request):
                 return True
+
+def random_code():
+        return binascii.b2a_hex(os.urandom(24)).decode('utf-8')

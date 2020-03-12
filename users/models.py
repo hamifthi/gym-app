@@ -1,19 +1,21 @@
-from django.db import models
-from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
-from datetime import time
-from multiselectfield import MultiSelectField
+from django.contrib.auth.models import User
 from django.utils.timezone import now
+from django.db import models
+from datetime import time
+
+from multiselectfield import MultiSelectField
+from .utils import random_code
 from .choices import *
-import os, binascii
+
 import datetime
 
 class Person(models.Model):
     name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
-    email = models.EmailField(max_length=100, null=True, unique=True)
-    password = models.CharField(max_length=50, null=True)
-    code = models.CharField(max_length=28, null=True)
+    email = models.EmailField(max_length=100, blank=False, unique=True, null=True)
+    password = models.CharField(max_length=50 , blank=False, null=True)
+    code = models.CharField(max_length=28, null=True, default=random_code)
 
     def __str__(self):
                 return f'{self.name}_{self.last_name}'
@@ -54,11 +56,9 @@ class Athlete(GymAccount):
 
 class FinancialTradeOff(models.Model):
     details = models.CharField(max_length=250, null=True)
-    date = models.DateTimeField()
+    date = models.DateTimeField(default=now)
     amount = models.BigIntegerField(null=True)
     user = models.ForeignKey(Person, on_delete=models.CASCADE, null=True)
-    def random_code():
-        return binascii.b2a_hex(os.urandom(20)).decode('utf-8')
     code = models.CharField(max_length=48, default=random_code)
 
     class Meta:

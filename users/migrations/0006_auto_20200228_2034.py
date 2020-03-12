@@ -21,7 +21,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='expense',
             name='code',
-            field=models.CharField(default=users.models.FinancialTradeOff.random_code, max_length=10),
+            field=models.CharField(default=users.utils.random_code, max_length=10),
         ),
         migrations.AddField(
             model_name='expense',
@@ -46,7 +46,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='income',
             name='code',
-            field=models.CharField(default=users.models.FinancialTradeOff.random_code, max_length=10),
+            field=models.CharField(default=users.utils.random_code, max_length=10),
         ),
         migrations.AddField(
             model_name='income',
