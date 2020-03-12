@@ -1,51 +1,32 @@
-from django.shortcuts import render, redirect, reverse
-from django.views import View
-from django.conf import settings
+from django.contrib.auth.hashers import make_password, check_password
 from django.http import JsonResponse, HttpResponse
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth.hashers import make_password, check_password
-from django.core.mail import send_mail
+from django.shortcuts import render, redirect, reverse
 from django.db.models import Count, Sum
+from django.core.mail import send_mail
+from django.conf import settings
+from django.views import View
+
 from users.models import Person, Token, Expense, Income, Athlete, Coach
-from json import JSONEncoder
+from .utils import user_recaptcha_fails
 from dateutil import relativedelta
+from json import JSONEncoder
 from .choices import *
+
 import os, binascii
 import requests
 import datetime
 import jwt
 
-def get_client_ip(request):
-    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-    if x_forwarded_for:
-        ip = x_forwarded_for.split(',')[0]
-    else:
-        ip = request.META.get('REMOTE_ADDR')
-    return ip
-
-def google_recaptcha_verify(request):
-    captcha_response = request.POST.get('g-recaptcha-response')
-    url = "https://www.google.com/recaptcha/api/siteverify"
-    params = {
-        'secret': settings.RECAPTCHA_SECRET_KEY,
-        'response': captcha_response,
-        'remoteip': get_client_ip(request)
-    }
-    verify_response = requests.post(url=url, params=params, verify=True)
-    verify_response = verify_response.json()
-    return verify_response.get("success",)
-
 @method_decorator(csrf_exempt, name='dispatch')
 class Register(View):
     def post(self, request, *args, **kwargs):
         # user has the requestcode
-        if 'requestcode' in request.POST:
-            if not google_recaptcha_verify(request):
-                context = {'message' : 'the captcha is not correct maybe you are robot?\
+        if user_recaptcha_fails(request):
+            context = {'message' : 'the captcha is not correct maybe you are robot?\
                      please enter the code correctly'}
-                return render(request, 'register.html', context, status=429)
-
+            return render(request, 'register.html', context, status=429)
         # new user
         if not Person.objects.filter(email = request.POST['email']).exists():
             code = binascii.b2a_hex(os.urandom(28)).decode('utf-8')
@@ -102,11 +83,11 @@ class Register(View):
 @method_decorator(csrf_exempt, name='dispatch')
 class AthleteRegister(View):
     def post(self, request, *args, **kwargs):
-        if 'requestcode' in request.POST:
-            if not google_recaptcha_verify(request):
-                context = {'message' : 'the captcha is not correct maybe you are robot? please enter the\
-                    code correctly'}
-                return render(request,  'athlete_register.html', context)
+        # user has the requestcode
+        if user_recaptcha_fails(request):
+            context = {'message' : 'the captcha is not correct maybe you are robot?\
+                     please enter the code correctly'}
+            return render(request, 'register.html', context, status=429)
         # get attributes
         email = request.POST['email']
         if Person.objects.filter(email=email).exists():
@@ -151,11 +132,11 @@ class AthleteRegister(View):
 @method_decorator(csrf_exempt, name='dispatch')
 class CoachRegister(View):
     def post(self, request, *args, **kwargs):
-        if 'requestcode' in request.POST:
-            if not google_recaptcha_verify(request):
-                context = {'message' : 'the captcha is not correct maybe you are robot? please enter the\
-                    code correctly'}
-                return render(request, 'coach_register.html', context)
+        # user has the requestcode
+        if user_recaptcha_fails(request):
+            context = {'message' : 'the captcha is not correct maybe you are robot?\
+                     please enter the code correctly'}
+            return render(request, 'register.html', context, status=429)
         # get attributes
         email = request.POST['email']
         if Person.objects.filter(email=email).exists():

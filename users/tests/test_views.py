@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.urls import reverse
 from users.models import Person, Token, Athlete, Coach, Income, Expense
-from users.views import google_recaptcha_verify
+from users.utils import google_recaptcha_verify
 from django.conf import settings
 from django.db.models import Count, Sum
 import os, binascii, datetime, jwt
@@ -17,10 +17,11 @@ class RegisterTest(TestCase):
         }
         return request_data
 
-    def test_google_recapcha(self):
+    def test_google_recaptcha(self):
         data = RegisterTest.setUpTestData()
         data['requestcode'] = True
         response = self.client.post('/register/', data)
+        print(response)
         self.assertEqual(response.status_code, 429)
         self.assertEqual(response.context['message'], 'the captcha is not correct maybe you are robot?\
                      please enter the code correctly')
@@ -378,3 +379,10 @@ class TotalTransactionReportTest(TestCase):
             .aggregate(Count('amount'), Sum('amount'))
         self.assertJSONEqual(response.content, {'income': income, 'expense': expense,
          'total': income['amount__sum'] - expense['amount__sum']})
+
+class MultilineTest(TestCase):
+    def test_sample(self):
+        a = 'this email has used before, if this is your email go to forgot password and change your password'
+        b = ('this email has used before, if this is your email go to forgot password '
+                'and change your password')
+        self.assertEqual(a, b)
