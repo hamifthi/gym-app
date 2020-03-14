@@ -1,13 +1,41 @@
-{% extends "template.html"%}
-{% load static %}
+{% extends "base.html"%}
+<!-- {% load static %} -->
+{% load crispy_forms_tags %}
 
 {% block content %}
 <script src='https://www.google.com/recaptcha/api.js'></script>
 
-<div class="row">
-    <div class="col-lg-12">
+{% if message %}
+  <div class="alert alert-primary  mt-4  w-50" role="alert">
+    {{ message|safe }}
+  </div>
+  {% endif %}
 
-{% if form.errors %}
+  <form method="post">
+      {% csrf_token %}
+      <div class ="mt-4  w-50">
+        <div class="form-row">
+          <div class="form-group col-md-6 mb-0">
+            {{ form.name|as_crispy_field }}
+          </div>
+          <div class="form-group col-md-6 mb-0">
+            {{ form.last_name|as_crispy_field }}
+          </div>
+      </div>
+      {{ form.email|as_crispy_field }}
+      {{ form.password|as_crispy_field }}
+      <div class="mb-3">
+        <label>Aren't you a robot</label>
+        <div class="g-recaptcha" data-sitekey="6LcOTtoUAAAAAB1SiuVIDsoON-5nlMWUkTnNTvR3">
+        </div>
+      </div>
+      <div>
+        <button type="submit" class="btn btn-primary">Sign Up</button>
+      </div>
+  </div>
+  </form>
+{% endblock %}
+<!-- {% if form.errors %}
 <p>
 نام کاربری یا پسورد شما درست نبود.
 </p>
@@ -36,9 +64,8 @@
   </div>
   {% endif %}
 
-
-
-
+<div class="row">
+    <div class="col-lg-12">
   <div class="row">
     <div class="col-md-6 col-md-offset-3">
       <div class="panel panel-default">
@@ -56,30 +83,30 @@
               {% if form.name.help_text %}
                 <small class="form-text text-muted">{{ field.help_text }}</small>
               {% endif %}
-              <!-- <div class="col-sm-10">
+              <div class="col-sm-10">
                 <input type="text" name="name" class="form-control" placeholder="حداقل سه کاراکتر">
-              </div> -->
+              </div>
             </div>
             <div class="form-group">
               <label for="last_name" class="col-sm-2 control-label" >نام خانوادگی</label>
               {{form.last_name}}
-              <!-- <div class="col-sm-10">
+              <div class="col-sm-10">
                 <input type="text" name="last_name" class="form-control" placeholder="حداقل سه کاراکتر">
-              </div> -->
+              </div>
             </div>
             <div class="form-group">
               <label for="email" class="col-sm-2 control-label">ایمیل شما</label>
               {{form.email}}
-              <!-- <div class="col-sm-10">
+              <div class="col-sm-10">
                 <input type="email" name="email" class="form-control"  placeholder="لینک تایید ساخت اکانت به این آدرس فرستاده می‌شود" required>
-              </div> -->
+              </div>
             </div>
             <div class="form-group">
               <label for="inputPassword3" class="col-sm-2 control-label" >کلمه عبور</label>
               {{form.password}}
-              <!-- <div class="col-sm-10">
+              <div class="col-sm-10">
                 <input type="password" name="password" class="form-control"  placeholder="حداقل پنج کاراکتر" required pattern=".{5,}">
-              </div> -->
+              </div>
             </div>
             
             <div class="form-group">
@@ -104,6 +131,5 @@
 
 
 </div>
-</div>
+</div> -->
 
-{% endblock %}

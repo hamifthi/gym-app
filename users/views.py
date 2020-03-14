@@ -29,25 +29,22 @@ class Register(View):
                      please enter the code correctly'}
             return render(request, 'register.html', context, status=429)
         # new user
-        if not Person.objects.filter(email = request.POST['email']).exists():
-            name = request.POST['name']
-            last_name = request.POST['last_name']
-            email = request.POST['email']
-            password = make_password(request.POST['password'])
+        form = RegisterForm(request.POST)
+        if form.is_valid():
+            name = form.cleaned_data['name']
+            last_name = form.cleaned_data['last_name']
+            email = form.cleaned_data['email']
+            password = make_password(form.cleaned_data['password'])
             user_account = Person.objects.create(name=name, last_name=last_name, email=email,
             password=password)
-            subject = 'Activating your account'
             message = f"To activate your account please click on this link \
                 {request.build_absolute_uri('/register/')}?email={email}&code={user_account.code}"
-            email_from = settings.EMAIL_HOST_USER
-            recipient_list = [email]
-            send_mail(subject, message, email_from, recipient_list)
-            context = {'message' : 'The activation link has been sent to your account'}
-            return render(request, 'register.html', context)
+            send_mail('Activating your account', message, settings.EMAIL_HOST_USER,
+            recipient_list=[email])
+            message = 'The activation link has been sent to your account'
+            return render(request, 'register.html', {'message': message, 'form': RegisterForm()})
         else:
-            context = {'message' : 'this email has used before, if this is your email go to forgot password\
-                and change your password'}
-            return render(request, 'register.html', context, status=409)
+            return render(request, 'register.html', {'form': form})
     
     def get(self, request, *args, **kwargs):
         # user click on activation link
@@ -77,9 +74,7 @@ class Register(View):
                 return render(request, 'register.html', context, status=404)
         # load the register page for the first visit
         else:
-
-            context = {'message': ''}
-            return render(request, 'register.html', {'context': context, 'form': RegisterForm()})
+            return render(request, 'register.html', {'form': RegisterForm()})
                 
 @method_decorator(csrf_exempt, name='dispatch')
 class AthleteRegister(View):
