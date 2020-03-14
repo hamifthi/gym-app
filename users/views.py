@@ -63,15 +63,17 @@ class Register(View):
                     }
                     jwt_token = jwt.encode(payload, settings.SECRET_KEY)
                     token = Token.objects.create(user=user, token=jwt_token)
-                    context = {'message': f'Your account has been activated please save your token is \
-                    {token.token} because it will not show to you again'}
-                    return render(request, 'register.html', context)
+                    message = f'Your account has been activated please save your token is \
+                    {token.token} because it will not show to you again'
+                    return render(request, 'register.html', {'message': message, 'form': RegisterForm()})
                 else:
-                    context = {'message': 'This code is unvalid, please try again'}
-                    return render(request, 'register.html', context, status=404)
+                    message = 'This code is unvalid, please try again'}
+                    return render(request, 'register.html', {'message': message, 'form': RegisterForm()},
+                    status=404)
             else:
-                context = {'message': 'Your request doesn\'t have email or code or both of them'}
-                return render(request, 'register.html', context, status=404)
+                message = 'Your request doesn\'t have email or code or both of them'}
+                return render(request, 'register.html', {'message': message, 'form': RegisterForm()},
+                status=404)
         # load the register page for the first visit
         else:
             return render(request, 'register.html', {'form': RegisterForm()})
