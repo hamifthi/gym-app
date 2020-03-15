@@ -27,23 +27,21 @@ class Token(models.Model):
     def __str__(self):
             return f'{self.user.email}_token'
 
+class Day(models.Model):
+    day = models.CharField(max_length=9)
+    number = models.IntegerField()
+
+    def __str__(self):
+        return f'{self.day}'
+
 class GymAccount(models.Model):
     age = models.IntegerField(null=True)
     sport_field = models.CharField(max_length=1, choices=Sport_Field, null=True)
-    days_of_week = MultiSelectField(choices=Day_Choices, null=True)
+    days_of_week = models.ManyToManyField(Day, null=True)
     user = models.OneToOneField(Person, on_delete=models.CASCADE)
 
     class Meta:
         abstract = True
-
-# Coach class
-class Coach(GymAccount):
-    salary = models.BigIntegerField()
-    # start_time = models.TimeField(null=False, blank=False)
-    # end_time = models.TimeField(null=False, blank=False)
-    
-    def __str__(self):
-        return f'{self.user.name }_{self.user.last_name}'
 
 # Athlete class
 class Athlete(GymAccount):
@@ -52,7 +50,16 @@ class Athlete(GymAccount):
     related_name='user_trainer')
 
     def __str__(self):
-        return f'{self.user.name }_{self.user.last_name}'
+        return f'{self.user.name}_{self.user.last_name}'
+
+# Coach class
+class Coach(GymAccount):
+    salary = models.BigIntegerField()
+    # start_time = models.TimeField(null=False, blank=False)
+    # end_time = models.TimeField(null=False, blank=False)
+    
+    def __str__(self):
+        return f'{self.user.name}_{self.user.last_name}'
 
 class FinancialTradeOff(models.Model):
     details = models.CharField(max_length=250, null=True)
