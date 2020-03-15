@@ -25,11 +25,12 @@ class Register(View):
     def post(self, request, *args, **kwargs):
         # user has the requestcode
         if user_recaptcha_fails(request):
-            context = {'message' : 'the captcha is not correct maybe you are robot?\
-                     please enter the code correctly'}
-            return render(request, 'register.html', context, status=429)
+            error_message = 'the captcha is not correct maybe you are robot?\
+            please enter the code correctly'
+            return render(request, 'register.html', {'error_message': error_message,
+            'form': PersonRegisterForm()}, status=429)
         # new user
-        form = RegisterForm(request.POST)
+        form = PersonRegisterForm(request.POST)
         if form.is_valid():
             name = form.cleaned_data['name']
             last_name = form.cleaned_data['last_name']
@@ -42,9 +43,11 @@ class Register(View):
             send_mail('Activating your account', message, settings.EMAIL_HOST_USER,
             recipient_list=[email])
             message = 'The activation link has been sent to your account'
-            return render(request, 'register.html', {'message': message, 'form': RegisterForm()})
+            return render(request, 'register.html', {'message': message, 'form': PersonRegisterForm()})
         else:
-            return render(request, 'register.html', {'form': form})
+            error_message = 'Please refine the error and try again'
+            return render(request, 'register.html', {'error_message': error_message, 'form': form},
+            status=404)
     
     def get(self, request, *args, **kwargs):
         # user click on activation link
@@ -61,71 +64,54 @@ class Register(View):
                         'id' : user.id,
                         'email': user.email
                     }
-                    jwt_token = jwt.encode(payload, settings.SECRET_KEY)
-                    token = Token.objects.create(user=user, token=jwt_token)
+                    token = Token.objects.create(user=user,
+                    token=jwt.encode(payload, settings.SECRET_KEY))
                     message = f'Your account has been activated please save your token is \
                     {token.token} because it will not show to you again'
-                    return render(request, 'register.html', {'message': message, 'form': RegisterForm()})
+                    return render(request, 'register.html', {'message': message, 'form': PersonRegisterForm()})
                 else:
-                    message = 'This code is unvalid, please try again'}
-                    return render(request, 'register.html', {'message': message, 'form': RegisterForm()},
-                    status=404)
+                    error_message = 'This code is unvalid, please try again'
+                    return render(request, 'register.html', {'error_message': error_message,
+                    'form': PersonRegisterForm()}, status=404)
             else:
-                message = 'Your request doesn\'t have email or code or both of them'}
-                return render(request, 'register.html', {'message': message, 'form': RegisterForm()},
-                status=404)
+                error_message = 'Your request doesn\'t have email or code or both of them'
+                return render(request, 'register.html', {'error_message': error_message,
+                'form': PersonRegisterForm()}, status=404)
         # load the register page for the first visit
         else:
-            return render(request, 'register.html', {'form': RegisterForm()})
+            message = 'Welcome. Please fill out the fields and Sign Up'
+            return render(request, 'register.html', {'message': message, 'form': PersonRegisterForm()})
                 
 @method_decorator(csrf_exempt, name='dispatch')
 class AthleteRegister(View):
     def post(self, request, *args, **kwargs):
         # user has the requestcode
         if user_recaptcha_fails(request):
-            context = {'message' : 'the captcha is not correct maybe you are robot?\
-                     please enter the code correctly'}
-            return render(request, 'register.html', context, status=429)
-        # get attributes
-        email = request.POST['email']
-        if Person.objects.filter(email=email).exists():
-            user = Person.objects.get(email=email)
+            error_message = 'the captcha is not correct maybe you are robot?\
+            please enter the code correctly'
+            return render(request, 'athlete_register.html',
+            {'error_message': error_message, 'form': AthleteRegisterForm()}, status=429)
+
+        form = AthleteRegisterForm(request.POST)
+        if form.is_valid():
+            age = form.cleaned_data['age']
+            sport_field = form.cleaned_data['sport_field']
+            days_of_week = form.cleaned_data['days_of_week']
+            user = form.cleaned_data['user']
+            coach = form.cleaned_data['trainer']
+            user_account = Athlete.objects.create(age=age, sport_field=sport_field,
+                                        days_of_week=list_of_days, user=user, trainer=coach)
+            message = 'This user become an athlete in your gym now'
+            return render(request, 'athlete_register.html',
+            {'message': message, 'form': AthleteRegisterForm()})
         else:
-            context = {'message' : 'This user is not registered yet'}
-            return render(request,  'athlete_register.html', context, status=404)
-        coach_email = request.POST['coach_email']
-        if Person.objects.filter(email=coach_email).exists():
-            coach = Person.objects.get(email=coach_email)
-            # accessing to the coach attributes
-            attributes = Coach.objects.get(user=coach)
-        else:
-            context = {'message' : 'This coach is not registered yet'}
-            return render(request,  'athlete_register.html', context, status=404)
-        age = request.POST['age']
-        sport_field = request.POST['sport_field']
-        # Here we can't normally send the sport_field for saving in DB we must send the code
-        for sport in Sport_Field:
-            if sport_field == sport[1]:
-                sport_field = sport[0]
-                # match the sport field of coach with athlete
-                if sport_field != attributes.sport_field:
-                    context = {'message' : 'This coach doesn\'t work in this field'}
-                    return render(request,  'athlete_register.html', context, status=406)
-        # Here we can't normally send the days_of_week for saving in DB we must send the code
-        days_of_week = request.POST['days_of_week']
-        days_of_week = days_of_week.split(', ')
-        list_of_days = []
-        for day in Day_Choices:
-            if day[1].lower() in days_of_week:
-                list_of_days.append(day[0])
-        user_account = Athlete.objects.create(age=age, sport_field=sport_field,
-                                    days_of_week=list_of_days, user=user, trainer=coach)
-        context = {'message' : 'This user become an athlete in your gym now'}
-        return render(request, 'athlete_register.html', context)
+            error_message = 'Please refine the error and try again'
+            return render(request, 'athlete_register.html',
+            {'error_message': error_message, 'form': form})
         
     def get(self, request, *args, **kwargs):
-        context = {'message': ''}
-        return render(request, 'athlete_register.html', context)
+        message = 'Welcome to this page. Please fill out the fields and submit the form'
+        return render(request, 'athlete_register.html', {'message': message, 'form': AthleteRegisterForm()})
 
 @method_decorator(csrf_exempt, name='dispatch')
 class CoachRegister(View):

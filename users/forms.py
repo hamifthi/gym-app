@@ -1,10 +1,28 @@
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
+from django.contrib.admin import widgets
 from django.forms import ModelForm
-from users.models import Person
+from django import forms
+
+from .widgets import FengyuanChenDatePickerInput
+from users.models import Person, Athlete
+
 import re
 
-class RegisterForm(ModelForm):
+class PersonRegisterForm(ModelForm):
+    class Meta:
+        model = Person
+        exclude = ['code']
+        help_texts = {'name': ('please enter your name here. pay attention that it must be\
+                                                at least 4 character'),
+                                'last_name': ('please enter your last_name here. pay attention that it must be\
+                                                at least 4 character'),
+                                'email': ('confirmation link will be sent to this address'),
+                                'password': ('please enter your password. it must be at least 8 characters')}
+        error_messages = {'email': {'invalid_email': 'this email is invalid. please enter a valid email.'},
+                                          'password': {'invalid_password': 'please enter your password. it must be at\
+                                               least 8 characters.'}}
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['name'].required = False
@@ -25,16 +43,19 @@ class RegisterForm(ModelForm):
             return error
         return password
 
-    # Add validation for fields
+class AthleteRegisterForm(ModelForm):
+
     class Meta:
-        model = Person
-        exclude = ['code']
-        help_texts = {'name': ('please enter your name here. pay attention that it must be\
-                                                at least 4 character'),
-                                'last_name': ('please enter your last_name here. pay attention that it must be\
-                                                at least 4 character'),
-                                'email': ('confirmation link will be sent to this address'),
-                                'password': ('please enter your password. it must be at least 8 characters')}
-        error_messages = {'email': {'invalid_email': 'confirmation link will be sent to this address'},
-                                          'password': {'invalid_password': 'please enter your password. it must be at\
-                                               least 8 characters'}}
+        model = Athlete
+        fields = '__all__'
+        widgets =  {
+            'last_payment': FengyuanChenDatePickerInput(), # specify date-frmat
+         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['age'].required = False
+        self.fields['trainer'].required = False
+        self.fields['start_time'].required = False
+        self.fields['end_time'].required = False
+        

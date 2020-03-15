@@ -3,7 +3,6 @@
 from django.db import migrations, models
 import django.db.models.deletion
 import django.utils.timezone
-import multiselectfield.db.fields
 
 
 class Migration(migrations.Migration):
@@ -63,7 +62,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('age', models.IntegerField(null=True)),
                 ('sport_field', models.CharField(choices=[('A', 'Aerobic'), ('F', 'Fitness'), ('T', 'TRX'), ('B', 'Bodybuilding'), ('P', 'Physic'), ('C', 'Crossfit')], max_length=1, null=True)),
-                ('days_of_week', multiselectfield.db.fields.MultiSelectField(choices=[('1', 'Saturday'), ('2', 'Sunday'), ('3', 'Monday'), ('4', 'Tuesday'), ('5', 'Wednesday'), ('6', 'Thursday'), ('7', 'Friday')], max_length=13, null=True)),
+                ('days_of_week', models.ManyToManyField(to='users.Day')),
                 ('salary', models.BigIntegerField()),
                 ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to='users.Person')),
             ],
@@ -77,7 +76,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('age', models.IntegerField(null=True)),
                 ('sport_field', models.CharField(choices=[('A', 'Aerobic'), ('F', 'Fitness'), ('T', 'TRX'), ('B', 'Bodybuilding'), ('P', 'Physic'), ('C', 'Crossfit')], max_length=1, null=True)),
-                ('days_of_week', multiselectfield.db.fields.MultiSelectField(choices=[('1', 'Saturday'), ('2', 'Sunday'), ('3', 'Monday'), ('4', 'Tuesday'), ('5', 'Wednesday'), ('6', 'Thursday'), ('7', 'Friday')], max_length=13, null=True)),
+                ('days_of_week', models.ManyToManyField(to='users.Day')),
                 ('last_payment', models.DateField(default=django.utils.timezone.now)),
                 ('trainer', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='users.Coach')),
                 ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to='users.Person')),

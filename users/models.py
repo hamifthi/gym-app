@@ -4,7 +4,6 @@ from django.utils.timezone import now
 from django.db import models
 from datetime import time
 
-from multiselectfield import MultiSelectField
 from .utils import random_code
 from .choices import *
 
@@ -37,27 +36,29 @@ class Day(models.Model):
 class GymAccount(models.Model):
     age = models.IntegerField(null=True)
     sport_field = models.CharField(max_length=1, choices=Sport_Field, null=True)
-    days_of_week = models.ManyToManyField(Day, null=True)
+    days_of_week = models.ManyToManyField(Day)
     user = models.OneToOneField(Person, on_delete=models.CASCADE)
 
     class Meta:
         abstract = True
 
-# Athlete class
-class Athlete(GymAccount):
-    last_payment = models.DateField(default=now)
-    trainer = models.ForeignKey(Person, on_delete=models.SET_NULL, null=True, blank=True,
-    related_name='user_trainer')
-
-    def __str__(self):
-        return f'{self.user.name}_{self.user.last_name}'
-
 # Coach class
 class Coach(GymAccount):
     salary = models.BigIntegerField()
-    # start_time = models.TimeField(null=False, blank=False)
-    # end_time = models.TimeField(null=False, blank=False)
+    start_time = models.TimeField(null=True)
+    end_time = models.TimeField(null=True)
     
+    def __str__(self):
+        return f'{self.user.name}_{self.user.last_name}'
+
+# Athlete class
+class Athlete(GymAccount):
+    last_payment = models.DateField(default=now, blank=True)
+    start_time = models.TimeField(null=True, blank=True)
+    end_time = models.TimeField(null=True, blank=True)
+    trainer = models.ForeignKey(Coach, on_delete=models.SET_NULL, null=True, blank=True,
+    related_name='user_trainer')
+
     def __str__(self):
         return f'{self.user.name}_{self.user.last_name}'
 
