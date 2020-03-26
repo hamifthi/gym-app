@@ -1,3 +1,4 @@
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
 from django.utils.timezone import now
@@ -34,7 +35,7 @@ class Day(models.Model):
         return f'{self.day}'
 
 class GymAccount(models.Model):
-    age = models.IntegerField(null=True)
+    age = models.IntegerField(null=True, validators=[MinValueValidator(10), MaxValueValidator(100)])
     sport_field = models.CharField(max_length=1, choices=Sport_Field, null=True)
     days_of_week = models.ManyToManyField(Day)
     user = models.OneToOneField(Person, on_delete=models.CASCADE)
@@ -44,7 +45,7 @@ class GymAccount(models.Model):
 
 # Coach class
 class Coach(GymAccount):
-    salary = models.BigIntegerField()
+    salary = models.BigIntegerField(default = 1500000)
     start_time = models.TimeField(null=True)
     end_time = models.TimeField(null=True)
     

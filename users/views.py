@@ -45,7 +45,7 @@ class Register(View):
             message = 'The activation link has been sent to your account'
             return render(request, 'register.html', {'message': message, 'form': PersonRegisterForm()})
         else:
-            error_message = 'Please refine the error and try again'
+            error_message = 'Please solve the error and try again'
             return render(request, 'register.html', {'error_message': error_message, 'form': form},
             status=404)
     
@@ -101,11 +101,11 @@ class AthleteRegister(View):
             coach = form.cleaned_data['trainer']
             user_account = Athlete.objects.create(age=age, sport_field=sport_field,
                                         days_of_week=list_of_days, user=user, trainer=coach)
-            message = 'This user become an athlete in your gym now'
+            message = 'This user now becomes an athlete in your gym'
             return render(request, 'athlete_register.html',
             {'message': message, 'form': AthleteRegisterForm()})
         else:
-            error_message = 'Please refine the error and try again'
+            error_message = 'Please solve the error and try again'
             return render(request, 'athlete_register.html',
             {'error_message': error_message, 'form': form})
         
@@ -118,38 +118,31 @@ class CoachRegister(View):
     def post(self, request, *args, **kwargs):
         # user has the requestcode
         if user_recaptcha_fails(request):
-            context = {'message' : 'the captcha is not correct maybe you are robot?\
-                     please enter the code correctly'}
-            return render(request, 'register.html', context, status=429)
-        # get attributes
-        email = request.POST['email']
-        if Person.objects.filter(email=email).exists():
-            user = Person.objects.get(email=email)
-        else:
-            context = {'message' : 'This user is not registered yet'}
-            return render(request,  'coach_register.html', context, status=404)
-        age = request.POST['age']
-        sport_field = request.POST['sport_field']
-        # Here we can't normally send the sport_field for saving in DB we must send the code
-        for sport in Sport_Field:
-            if sport_field == sport[1]:
-                sport_field = sport[0]
-        # Here we can't normally send the days_of_week for saving in DB we must send the code
-        days_of_week = request.POST['days_of_week']
-        days_of_week = days_of_week.split(', ')
-        list_of_days = []
-        for day in Day_Choices:
-            if day[1].lower() in days_of_week:
-                list_of_days.append(day[0])
-        salary = request.POST['salary']
-        user_account = Coach.objects.create(age=age, sport_field=sport_field,
+            error_message = 'the captcha is not correct maybe you are robot?\
+            please enter the code correctly'
+            return render(request, 'coach_register.html',
+            {'error_message': error_message, 'form': CoachRegisterForm()}, status=429)
+
+        form = CoachRegisterForm(request.POST)
+        if form.is_valid():
+            age = form.cleaned_data['age']
+            sport_field = form.cleaned_data['sport_field']
+            days_of_week = form.cleaned_data['days_of_week']
+            user = form.cleaned_data['user']
+            salary = form.cleaned_data['salary']
+            user_account = Coach.objects.create(age=age, sport_field=sport_field,
                                     days_of_week=list_of_days, salary=salary, user=user)
-        context = {'message' : 'This user become a coach in your gym now'}
-        return render(request, 'coach_register.html', context)
+            message = 'This user now becomes a coach in your gym'
+            return render(request, 'coach_register.html',
+            {'message': message, 'form': CoachRegisterForm()})
+        else:
+            error_message = 'Please solve the error and try again'
+            return render(request, 'coach_register.html',
+            {'error_message': error_message, 'form': form})
     
     def get(self, request, *args, **kwargs):
-        context = {'message': ''}
-        return render(request, 'coach_register.html', context)
+        message = 'Welcome to this page. Please fill out the fields and submit the form'
+        return render(request, 'coach_register.html', {'message': message, 'form': CoachRegisterForm()})
 
 @method_decorator(csrf_exempt, name='dispatch')
 class SubmitIncome(View):
