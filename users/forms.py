@@ -45,7 +45,6 @@ class PersonRegisterForm(ModelForm):
         return password
 
 class CoachRegisterForm(ModelForm):
-
     class Meta:
         model = Coach
         fields = '__all__'
@@ -61,15 +60,19 @@ class CoachRegisterForm(ModelForm):
         self.fields['age'].widget.attrs['max'] = 100
         self.fields['start_time'].required = False
         self.fields['end_time'].required = False
-
+    
 class AthleteRegisterForm(ModelForm):
-
     class Meta:
         model = Athlete
         fields = '__all__'
         widgets =  {
             'last_payment': FengyuanChenDatePickerInput(), # specify date-frmat
         }
+        help_texts = {'age': ('Please enter your age here'),
+                                'start_time': ('Work hour starting time'),
+                                'end_time': ('Work hour ending time'),
+                                'user': ('Who are you? Or better to say by which person are you?'),
+                                'trainer': ('Which coach do you want to work with')}
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -79,4 +82,19 @@ class AthleteRegisterForm(ModelForm):
         self.fields['trainer'].required = False
         self.fields['start_time'].required = False
         self.fields['end_time'].required = False
-        
+    
+    def clean_sport_field(self):
+        sport_field = self.cleaned_data.get('sport_field')
+        coach = Coach.objects.get(pk=int(self.data['trainer']))
+        if coach.sport_field != sport_field:
+            raise ValidationError(f'Your sport field and your coach sport field must be the same. Your\
+                coach sport field is {coach.sport_field}')
+        return sport_field
+
+    def clean_days_of_week(self):
+        days_of_week = set(self.cleaned_data.get('days_of_week'))
+        coach =Coach.objects.get(pk=int(self.data['trainer']))
+        coach_days_of_week = set(coach.days_of_week.all())
+        if days_of_week != coach_days_of_week
+            raise ValidationError('Your coach goes to gym in different days')
+        return days_of_week

@@ -100,7 +100,8 @@ class AthleteRegister(View):
             user = form.cleaned_data['user']
             coach = form.cleaned_data['trainer']
             user_account = Athlete.objects.create(age=age, sport_field=sport_field,
-                                        days_of_week=list_of_days, user=user, trainer=coach)
+                                       user=user, trainer=coach)
+            user_account.days_of_week.set(days_of_week)
             message = 'This user now becomes an athlete in your gym'
             return render(request, 'athlete_register.html',
             {'message': message, 'form': AthleteRegisterForm()})
@@ -131,7 +132,8 @@ class CoachRegister(View):
             user = form.cleaned_data['user']
             salary = form.cleaned_data['salary']
             user_account = Coach.objects.create(age=age, sport_field=sport_field,
-                                    days_of_week=list_of_days, salary=salary, user=user)
+                                    salary=salary, user=user)
+            user_account.days_of_week.set(days_of_week)
             message = 'This user now becomes a coach in your gym'
             return render(request, 'coach_register.html',
             {'message': message, 'form': CoachRegisterForm()})

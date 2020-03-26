@@ -36,7 +36,7 @@ class Day(models.Model):
 
 class GymAccount(models.Model):
     age = models.IntegerField(null=True, validators=[MinValueValidator(10), MaxValueValidator(100)])
-    sport_field = models.CharField(max_length=1, choices=Sport_Field, null=True)
+    sport_field = models.CharField(max_length=12, choices=Sport_Field, null=True)
     days_of_week = models.ManyToManyField(Day)
     user = models.OneToOneField(Person, on_delete=models.CASCADE)
 
