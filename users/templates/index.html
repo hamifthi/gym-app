@@ -1,135 +1,230 @@
-{% extends "template.html"%}
 {% load static %}
+<!DOCTYPE html>
+<html lang="en">
 
-{% block content %}
+<head>
 
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="">
+  <meta name="author" content="">
 
-<div class="row">
-  <div class="col-md-12">
-    <div class="alert alert-info" role="alert">
-      <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-      <a href="https://github.com/Hamifthi/gym-app">
-این پروژه یک سیستم برای مدیریت باشگاه است و همچنین کسایی که ازش استفاده میکنن میتونن خرجایی که تو باشگاه کردن رو بنویسن 
-      </a>
+  <title>Gym app</title>
+
+  <!-- Bootstrap core CSS -->
+  <link href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+
+  <!-- Custom fonts for this template -->
+  <link href="{% static 'vendor/fontawesome-free/css/all.min.css' %}" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css?family=Varela+Round" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
+
+  <!-- Custom styles for this template -->
+  <link href="{% static 'css/grayscale.min.css' %}" rel="stylesheet">
+
+</head>
+
+<body id="page-top">
+
+  <!-- Navigation -->
+  <nav class="navbar navbar-expand-lg navbar-light fixed-top" id="mainNav">
+    <div class="container">
+      <a class="navbar-brand js-scroll-trigger" href="#page-top">Hamed Fathi</a>
+      <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+        Menu
+        <i class="fas fa-bars"></i>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarResponsive">
+        <ul class="navbar-nav ml-auto">
+          <li class="nav-item">
+            <a class="nav-link js-scroll-trigger" href="#about">About</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link js-scroll-trigger" href="#projects">Projects</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link js-scroll-trigger" href="#signup">Contact</a>
+          </li>
+        </ul>
+      </div>
     </div>
-  </div>
-</div>
+  </nav>
 
+  <!-- Header -->
+  <header class="masthead">
+    <div class="container d-flex h-100 align-items-center">
+      <div class="mx-auto text-center">
+        <h1 class="mx-auto my-0 text-uppercase">Gym App</h1>
+        <h2 class="text-white-50 mx-auto mt-2 mb-5">An opensource django app</h2>
+        <a href="#about" class="btn btn-primary js-scroll-trigger">Get Started</a>
+      </div>
+    </div>
+  </header>
 
-  {% if message %}
-  <div class="bs-callout bs-callout-info">
-    <h5>{{ message|safe }}</h5>
-  </div>
-  {% endif %}
-
-
-
-<div class="row">
-
-    <div class="col-md-6">
-      <div class="panel panel-default">
-        <div class="panel-heading">
-          <h3 class="panel-title">اپ مدیریت شخصی بر اساس بستون که جادی آموزش داده</h3>
+  <!-- About Section -->
+  <section id="about" class="about-section text-center">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-8 mx-auto">
+          <h2 class="text-white mb-4">Built with Bootstrap 4</h2>
+          <p class="text-white-50">Gym app is an open source django project created by Hamed Fathi. It
+              is a demo django web application that I created for learning django deeply
+          </p>
         </div>
-        <div class="panel-body">
+      </div>
+      <img src="{% static 'img/ipad.png' %}" class="img-fluid" alt="">
+    </div>
+  </section>
 
-<p>
+  <!-- Projects Section -->
+  <section id="projects" class="projects-section bg-light">
+    <div class="container">
 
-
-
-این اپ یک پروژه در حال حرکته، پروژه‌ای برای استفاده جدی و پروژه‌ای برای یادگیری ساختن بخش فنی یک استارتاپ. توی بستون می‌تونین خرج‌ها و درآمدهاتون رو بنویسین و حساب زندگی‌تون رو داشته باشین. کافیه اینجا یک اکانت بسازین و یکی از کلاینت‌ها رو نصب کنین.
-</p>
-<p>
-این یک پروژه روحیه بخش هم هست. با <a href="http://jadi.net/tag/بستون">دیدن قدم به قدم مراحل ساخت پروژه</a> مطمئن می‌شین که با ترکیب راحتی از تلاش و سواد می‌شه یک سرویس واقعی راه انداخت و نیازی نیست برای تحقق ایده‌مون دست به دامن این و اون باشیم یا سال ها صبر کنیم.
-
-</p>
-<p>
-برای باز کردن اکانت
-<a href="{% url 'register' %}">به صفحه رجیستر شدن برین</a>
-و برای اطلاعات بیشتر مراجعه بکنین به
-<a href="https://github.com/Hamifthi/gym-app">
-  گیت هاب پروژه.
-</a>
-</p>
+      <!-- Featured Project Row -->
+      <div class="row align-items-center no-gutters mb-4 mb-lg-5">
+        <div class="col-xl-8 col-lg-7">
+          <img class="img-fluid mb-3 mb-lg-0" src="{% static 'img/bg-masthead.jpg' %}" alt="">
         </div>
-        <p>
-
-        </p>
+        <div class="col-xl-4 col-lg-5">
+          <div class="featured-text text-center text-lg-left">
+            <h4>Shoreline</h4>
+            <p class="text-black-50 mb-0">Grayscale is open source and MIT licensed. This means you can use it for any project - even commercial projects! Download it, customize it, and publish your website!</p>
+          </div>
+        </div>
       </div>
 
-
-<br /><br />
-
-
-
-</div>
-
-<div class="col-md-6">
-  <div class="panel panel-default">
-    <div class="panel-body">
-
-      <div class="panel-heading">
-        <h3 class="panel-title">
-            ماجرا چیه؟
-        </h3>
+      <!-- Project One Row -->
+      <div class="row justify-content-center no-gutters mb-5 mb-lg-0">
+        <div class="col-lg-6">
+          <img class="img-fluid" src="{% static 'img/demo-image-01.jpg' %}" alt="">
+        </div>
+        <div class="col-lg-6">
+          <div class="bg-black text-center h-100 project">
+            <div class="d-flex h-100">
+              <div class="project-text w-100 my-auto text-center text-lg-left">
+                <h4 class="text-white">Misty</h4>
+                <p class="mb-0 text-white-50">An example of where you can put an image of a project, or anything else, along with a description.</p>
+                <hr class="d-none d-lg-block mb-0 ml-0">
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-  <p>
-      این در واقع یک سیستم مدیریت شخصی است. کارایی که میخواین بکنین و پول‌هایی که در آوردین رو توش می‌زنین و پول‌هایی که خرج کردین رو یادداشت می‌کنین.
-      اما این سیستم شدیداً در ابتدای راهه، دلیلش؟ این سیستم داره به عنوان یک پروسه آموزش کار می‌کنه و
-      <a href="https://github.com/Hamifthi/gym-app">
-        من قدم به قدم کارهایی که برای راه انداختن اینجا دارم می‌کنم رو منتشر کرده‌ام
-      </a>
-      .
-  </p>
-  <p>
-      در حال حاضر برای استفاده از این سیستم باید قدم‌های زیر رو پیش برین:
 
-      <ul>
-      <li> از صفحه رجیستریشن که این بغل و اون بالاست، ثبت نام کنین و توکن دریافت کنین</li>
-      <li> کاراتون و خرج و دخل‌ها رو وارد سیستم کنین و منتظر باشین که هی سیستم کامل‌تر بشه</li>
-      </ul>
+      <!-- Project Two Row -->
+      <div class="row justify-content-center no-gutters">
+        <div class="col-lg-6">
+          <img class="img-fluid" src="{% static 'img/demo-image-02.jpg' %}" alt="">
+        </div>
+        <div class="col-lg-6 order-lg-first">
+          <div class="bg-black text-center h-100 project">
+            <div class="d-flex h-100">
+              <div class="project-text w-100 my-auto text-center text-lg-right">
+                <h4 class="text-white">Mountains</h4>
+                <p class="mb-0 text-white-50">Another example of a project with its respective description. These sections work well responsively as well, try this theme on a small screen!</p>
+                <hr class="d-none d-lg-block mb-0 mr-0">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
-  </p>
     </div>
-  </div>
-</div>
+  </section>
 
-</div>
-{% endblock %}
+  <!-- Signup Section -->
+  <section id="signup" class="signup-section">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-10 col-lg-8 mx-auto text-center">
 
+          <i class="far fa-paper-plane fa-2x mb-2 text-white"></i>
+          <h2 class="text-white mb-5">Subscribe to receive updates!</h2>
 
-{% block footer %}
+          <form class="form-inline d-flex">
+            <input type="email" class="form-control flex-fill mr-0 mr-sm-2 mb-3 mb-sm-0" id="inputEmail" placeholder="Enter email address...">
+            <button type="submit" class="btn btn-primary mx-auto">Subscribe</button>
+          </form>
 
-<script >
-$(document).ready(function () {
-        $(".subtaskinput").fadeOut(0);
-        $('.fa-square-o').hover(function () {
-            $(this).addClass('fa-check-square-o');
-            $(this).removeClass('fa-square-o');
-        }, function () {
-            $(this).addClass('fa-square-o');
-            $(this).removeClass('fa-check-square-o');
-        });
+        </div>
+      </div>
+    </div>
+  </section>
 
-});
+  <!-- Contact Section -->
+  <section class="contact-section bg-black">
+    <div class="container">
 
-function showsubtaskinput(elementid){
-  if ($('.btn-'+elementid).text() == '+') {
-    $('.subtask-'+elementid).fadeIn(250);
-    $('.subtask-'+elementid).focus();
-    $('.btn-'+elementid).text ('-');
-  }
-  else {
-    $('.subtask-'+elementid).fadeOut(250);
-    $('.btn-'+elementid).text ('+');
-  }
-  return 0;
-}
-</script>
+      <div class="row">
 
-<script type="text/javascript">
-$(".alert").fadeTo(10000, 500).slideUp(500, function(){
-    $(".alert").slideUp(10000);
-});
-</script>
-{% endblock %}
+        <div class="col-md-4 mb-3 mb-md-0">
+          <div class="card py-4 h-100">
+            <div class="card-body text-center">
+              <i class="fas fa-map-marked-alt text-primary mb-2"></i>
+              <h4 class="text-uppercase m-0">Address</h4>
+              <hr class="my-4">
+              <div class="small text-black-50">4923 Market Street, Orlando FL</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-4 mb-3 mb-md-0">
+          <div class="card py-4 h-100">
+            <div class="card-body text-center">
+              <i class="fas fa-envelope text-primary mb-2"></i>
+              <h4 class="text-uppercase m-0">Email</h4>
+              <hr class="my-4">
+              <div class="small text-black-50">
+                <a href="#">hello@yourdomain.com</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-4 mb-3 mb-md-0">
+          <div class="card py-4 h-100">
+            <div class="card-body text-center">
+              <i class="fas fa-mobile-alt text-primary mb-2"></i>
+              <h4 class="text-uppercase m-0">Phone</h4>
+              <hr class="my-4">
+              <div class="small text-black-50">+1 (555) 902-8832</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="social d-flex justify-content-center">
+        <a href="#" class="mx-2">
+          <i class="fab fa-twitter"></i>
+        </a>
+        <a href="#" class="mx-2">
+          <i class="fab fa-facebook-f"></i>
+        </a>
+        <a href="#" class="mx-2">
+          <i class="fab fa-github"></i>
+        </a>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="bg-black small text-center text-white-50">
+    <div class="container">
+      Copyright &copy; Your Website 2019
+    </div>
+  </footer>
+
+  <!-- Bootstrap core JavaScript -->
+  <script src="{% static 'vendor/jquery/jquery.min.js' %}"></script>
+  <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+
+  <!-- Plugin JavaScript -->
+  <script src="{% static 'vendor/jquery-easing/jquery.easing.min.js' %}"></script>
+
+  <!-- Custom scripts for this template -->
+  <script src="{% static 'js/grayscale.min.js '%}'"></script>
+
+</body>
+
+</html>
