@@ -14,7 +14,7 @@ class Person(models.Model):
     name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
     email = models.EmailField(max_length=100, blank=False, unique=True, null=True)
-    password = models.CharField(max_length=50 , blank=False, null=True)
+    password = models.CharField(max_length=300 , blank=False, null=True)
     code = models.CharField(max_length=28, null=True, default=random_code)
 
     def __str__(self):
@@ -38,6 +38,8 @@ class GymAccount(models.Model):
     age = models.IntegerField(null=True, validators=[MinValueValidator(10), MaxValueValidator(100)])
     sport_field = models.CharField(max_length=12, choices=Sport_Field, null=True)
     days_of_week = models.ManyToManyField(Day)
+    start_time = models.TimeField(null=True)
+    end_time = models.TimeField(null=True)
     user = models.OneToOneField(Person, on_delete=models.CASCADE)
 
     class Meta:
@@ -46,17 +48,13 @@ class GymAccount(models.Model):
 # Coach class
 class Coach(GymAccount):
     salary = models.BigIntegerField(default = 1500000)
-    start_time = models.TimeField(null=True)
-    end_time = models.TimeField(null=True)
-    
+
     def __str__(self):
         return f'{self.user.name}_{self.user.last_name}'
 
 # Athlete class
 class Athlete(GymAccount):
     last_payment = models.DateField(default=now, blank=True)
-    start_time = models.TimeField(null=True, blank=True)
-    end_time = models.TimeField(null=True, blank=True)
     trainer = models.ForeignKey(Coach, on_delete=models.SET_NULL, null=True, blank=True,
     related_name='user_trainer')
 

@@ -1,6 +1,5 @@
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
-from django.contrib.admin import widgets
 from django.forms import ModelForm
 from django import forms
 
@@ -23,6 +22,10 @@ class PersonRegisterForm(ModelForm):
         error_messages = {'email': {'invalid_email': 'this email is invalid. please enter a valid email.'},
                                           'password': {'invalid_password': 'please enter your password. it must be at\
                                                least 8 characters.'}}
+
+        widgets =  {
+            'password': forms.widgets.PasswordInput(),
+        }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -53,26 +56,35 @@ class CoachRegisterForm(ModelForm):
                                 'start_time': ('Work hour starting time'),
                                 'end_time': ('Work hour ending time'),
                                 'user': ('Who are you? Or better to say by which person are you?')}
+        
+        error_messages = {'start_time': {'invalid': 'Enter time in a correct format HH:mm:ss for instance:\
+                                                                    18:00:00'},
+                                          'end_time': {'invalid': 'Enter time in a correct format HH:mm:ss for instance:\
+                                                                    19:30:00'}}
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['age'].widget.attrs['min'] = 10
         self.fields['age'].widget.attrs['max'] = 100
-        self.fields['start_time'].required = False
-        self.fields['end_time'].required = False
     
 class AthleteRegisterForm(ModelForm):
     class Meta:
         model = Athlete
         fields = '__all__'
         widgets =  {
-            'last_payment': FengyuanChenDatePickerInput(), # specify date-frmat
+            'last_payment': FengyuanChenDatePickerInput(), # datepicker pop up
         }
+
         help_texts = {'age': ('Please enter your age here'),
-                                'start_time': ('Work hour starting time'),
-                                'end_time': ('Work hour ending time'),
+                                'start_time': ('Training starting time'),
+                                'end_time': ('Training ending time'),
                                 'user': ('Who are you? Or better to say by which person are you?'),
                                 'trainer': ('Which coach do you want to work with')}
+
+        error_messages = {'start_time': {'invalid': 'Enter time in a correct format HH:mm:ss for instance:\
+                                                                    18:00:00'},
+                                          'end_time': {'invalid': 'Enter time in a correct format HH:mm:ss for instance:\
+                                                                    19:30:00'}}
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -93,8 +105,25 @@ class AthleteRegisterForm(ModelForm):
 
     def clean_days_of_week(self):
         days_of_week = set(self.cleaned_data.get('days_of_week'))
-        coach =Coach.objects.get(pk=int(self.data['trainer']))
+        coach = Coach.objects.get(pk=int(self.data['trainer']))
         coach_days_of_week = set(coach.days_of_week.all())
-        if days_of_week != coach_days_of_week
+        print(days_of_week not in coach_days_of_week)
+        if days_of_week != coach_days_of_week:
             raise ValidationError('Your coach goes to gym in different days')
         return days_of_week
+
+    def clean_start_time(self):
+        start_time = self.cleaned_data.get('start_time')
+        coach = Coach.objects.get(pk=int(self.data['trainer']))
+        if start_time < coach.start_time:
+            raise ValidationError(f'Your coach arrives at the gym later than this time. He or She arrives at\
+                                                    {coach.start_time}')
+        return start_time
+
+    def clean_end_time(self):
+        end_time = self.cleaned_data.get('end_time')
+        coach = Coach.objects.get(pk=int(self.data['trainer']))
+        if end_time > coach.end_time:
+            raise ValidationError(f'Your coach leaves the gym sooner than this time. He or She arrives at\
+                                                    {coach.end_time}')
+        return end_time

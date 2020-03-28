@@ -24,13 +24,13 @@ import jwt
 class Register(View):
     def post(self, request, *args, **kwargs):
         # user has the requestcode
+        form = PersonRegisterForm(request.POST)
         if user_recaptcha_fails(request):
             error_message = 'the captcha is not correct maybe you are robot?\
             please enter the code correctly'
             return render(request, 'register.html', {'error_message': error_message,
-            'form': PersonRegisterForm()}, status=429)
+            'form': form}, status=429)
         # new user
-        form = PersonRegisterForm(request.POST)
         if form.is_valid():
             name = form.cleaned_data['name']
             last_name = form.cleaned_data['last_name']
