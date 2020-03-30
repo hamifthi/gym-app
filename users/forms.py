@@ -1,3 +1,4 @@
+from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.forms import ModelForm
@@ -7,6 +8,19 @@ from .widgets import FengyuanChenDatePickerInput
 from users.models import Person, Athlete, Coach
 
 import re
+
+class PersonCreationForm(UserCreationForm):
+
+    class Meta:
+        model = Person
+        exclude = ['code']
+
+class PersonChangeForm(UserChangeForm):
+
+    class Meta:
+        model = Person
+        exclude = ['code']
+
 
 class PersonRegisterForm(ModelForm):
     class Meta:
