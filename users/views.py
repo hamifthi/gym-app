@@ -24,7 +24,7 @@ import jwt
 class Register(View):
     def post(self, request, *args, **kwargs):
         # user has the requestcode
-        form = PersonRegisterForm(request.POST)
+        form = PersonCreationForm(request.POST)
         if user_recaptcha_fails(request):
             error_message = 'the captcha is not correct maybe you are robot?\
             please enter the code correctly'
@@ -35,15 +35,14 @@ class Register(View):
             name = form.cleaned_data['name']
             last_name = form.cleaned_data['last_name']
             email = form.cleaned_data['email']
-            password = make_password(form.cleaned_data['password'])
+            password = make_password(form.cleaned_data['password1'])
             user_account = Person.objects.create(name=name, last_name=last_name, email=email,
-            password=password)
-            message = f"To activate your account please click on this link \
-                {request.build_absolute_uri('/register/')}?email={email}&code={user_account.code}"
+            password=password, is_active=False)
+            message = f"To activate your account please click on this link {request.build_absolute_uri('/register/')}?email={email}&code={user_account.code}"
             send_mail('Activating your account', message, settings.EMAIL_HOST_USER,
             recipient_list=[email])
             message = 'The activation link has been sent to your account'
-            return render(request, 'register.html', {'message': message, 'form': PersonRegisterForm()})
+            return render(request, 'register.html', {'message': message, 'form': PersonCreationForm()})
         else:
             error_message = 'Please solve the error and try again'
             return render(request, 'register.html', {'error_message': error_message, 'form': form},
@@ -58,29 +57,29 @@ class Register(View):
                 code = request.GET['code']
                 # person exist and we activate it
                 if Person.objects.filter(code=code).exists():
-                    user = Person.objects.get(email=email)
+                    Person.objects.filter(code=code).update(is_active=True)
                     Person.objects.filter(code=code).update(code=None)
+                    user = Person.objects.get(email=email)
                     payload = {
                         'id' : user.id,
                         'email': user.email
                     }
                     token = Token.objects.create(user=user,
                     token=jwt.encode(payload, settings.SECRET_KEY))
-                    message = f'Your account has been activated please save your token is \
-                    {token.token} because it will not show to you again'
-                    return render(request, 'register.html', {'message': message, 'form': PersonRegisterForm()})
+                    message = f'Your account has been activated.'
+                    return render(request, 'register.html', {'message': message, 'form': PersonCreationForm()})
                 else:
                     error_message = 'This code is unvalid, please try again'
                     return render(request, 'register.html', {'error_message': error_message,
-                    'form': PersonRegisterForm()}, status=404)
+                    'form': PersonCreationForm()}, status=404)
             else:
                 error_message = 'Your request doesn\'t have email or code or both of them'
                 return render(request, 'register.html', {'error_message': error_message,
-                'form': PersonRegisterForm()}, status=404)
+                'form': PersonCreationForm()}, status=404)
         # load the register page for the first visit
         else:
             message = 'Welcome. Please fill out the fields and Sign Up'
-            return render(request, 'register.html', {'message': message, 'form': PersonRegisterForm()})
+            return render(request, 'register.html', {'message': message, 'form': PersonCreationForm()})
                 
 @method_decorator(csrf_exempt, name='dispatch')
 class AthleteRegister(View):

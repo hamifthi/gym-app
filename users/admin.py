@@ -9,21 +9,21 @@ class PersonAdmin(UserAdmin):
     add_form = PersonCreationForm
     form = PersonChangeForm
     model = Person
-    list_display = ('email', 'name', 'last_name')
+    list_display = ('email', 'name', 'last_name', 'is_staff')
     list_filter = ('email', 'is_staff', 'is_active')
     fieldsets = (
-        (None, {'fields': ('email', 'password')}),
+        ('Personal_Info', {'fields': ('name', 'last_name', 'email', 'password')}),
         ('Permissions', {'fields': ('is_staff', 'is_active')}),
     )
     add_fieldsets = (
-        ('credentials', {
+        ('Credentials', {
             'classes': ('wide',),
             'fields': ('name', 'last_name', 'email', 'password1', 'password2',
             'is_staff', 'is_active')}
         ),
     )
     search_fields = ('email',)
-    ordering = ('email',)
+    ordering = ('id',)
 
 @admin.register(Day)
 class DayAdmin(admin.ModelAdmin):
