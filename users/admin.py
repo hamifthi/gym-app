@@ -4,6 +4,7 @@ from django.contrib.auth.admin import UserAdmin
 from .forms import PersonCreationForm, PersonChangeForm
 from .models import Person, Coach, Athlete, Token, Income, Expense, Day
 
+@admin.register(Person)
 class PersonAdmin(UserAdmin):
     add_form = PersonCreationForm
     form = PersonChangeForm
@@ -15,15 +16,16 @@ class PersonAdmin(UserAdmin):
         ('Permissions', {'fields': ('is_staff', 'is_active')}),
     )
     add_fieldsets = (
-        (None, {
+        ('credentials', {
             'classes': ('wide',),
-            'fields': ('email', 'password1', 'password2', 'is_staff', 'is_active')}
+            'fields': ('name', 'last_name', 'email', 'password1', 'password2',
+            'is_staff', 'is_active')}
         ),
     )
     search_fields = ('email',)
     ordering = ('email',)
 
-
+@admin.register(Day)
 class DayAdmin(admin.ModelAdmin):
     def has_add_permission(self, request):
         number_of_days = Day.objects.count()
@@ -33,10 +35,8 @@ class DayAdmin(admin.ModelAdmin):
             return True
 
 # Register your models here.
-admin.site.register(Person)
 admin.site.register(Coach)
 admin.site.register(Athlete)
 admin.site.register(Income)
 admin.site.register(Expense)
 admin.site.register(Token)
-admin.site.register(Day, DayAdmin)
