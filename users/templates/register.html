@@ -19,7 +19,7 @@
 
   <form method="post">
       {% csrf_token %}
-      <div class ="mt-4  w-50">
+      <div class ="mt-4 mb-3 w-50">
         <div class="form-row">
           <div class="form-group col-md-6 mb-0">
             {{ form.name|as_crispy_field }}
@@ -29,8 +29,9 @@
           </div>
       </div>
       {{ form.email|as_crispy_field }}
-      {{ form.password|as_crispy_field }}
-      <div class="mb-3">
+      {{ form.password1|as_crispy_field }}
+      {{ form.password2|as_crispy_field }}
+      <div class="mb-2">
         <label>Aren't you a robot</label>
         <div class="g-recaptcha" data-sitekey="6LcOTtoUAAAAAB1SiuVIDsoON-5nlMWUkTnNTvR3">
         </div>
@@ -42,7 +43,7 @@
   </form>
 
 <script type="text/javascript">
-$(".alert").fadeTo(3500, 500).slideUp(500, function(){
+$(".alert").fadeTo(2000, 500).slideUp(500, function(){
     $(".alert").slideUp(10000);
 });
 </script>

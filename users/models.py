@@ -1,21 +1,28 @@
 from django.core.validators import MinValueValidator, MaxValueValidator
+from django.utils.translation import ugettext_lazy as _
+from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError
-from django.contrib.auth.models import User
 from django.utils.timezone import now
 from django.db import models
 from datetime import time
 
+from .managers import CustomUserManager
 from .utils import random_code
 from .choices import *
 
 import datetime
 
-class Person(models.Model):
-    name = models.CharField(max_length=100)
-    last_name = models.CharField(max_length=100)
-    email = models.EmailField(max_length=100, blank=False, unique=True, null=True)
-    password = models.CharField(max_length=300 , blank=False, null=True)
+class Person(AbstractUser):
+    username = None
+    name = models.CharField(max_length=200)
+    last_name = models.CharField(max_length=200)
+    email = models.EmailField(_('Email Address'), unique=True, null=True)
     code = models.CharField(max_length=28, null=True, default=random_code)
+
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = []
+
+    objects = CustomUserManager()
 
     def __str__(self):
                 return f'{self.name}_{self.last_name}'

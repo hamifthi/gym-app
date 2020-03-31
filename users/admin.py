@@ -1,6 +1,31 @@
 from django.contrib import admin
-from .models import Coach, Athlete, Token, Person, Income, Expense, Day
+from django.contrib.auth.admin import UserAdmin
 
+from .forms import PersonCreationForm, PersonChangeForm
+from .models import Person, Coach, Athlete, Token, Income, Expense, Day
+
+@admin.register(Person)
+class PersonAdmin(UserAdmin):
+    add_form = PersonCreationForm
+    form = PersonChangeForm
+    model = Person
+    list_display = ('email', 'name', 'last_name', 'is_staff')
+    list_filter = ('email', 'is_staff', 'is_active')
+    fieldsets = (
+        ('Personal_Info', {'fields': ('name', 'last_name', 'email', 'password')}),
+        ('Permissions', {'fields': ('is_staff', 'is_active')}),
+    )
+    add_fieldsets = (
+        ('Credentials', {
+            'classes': ('wide',),
+            'fields': ('name', 'last_name', 'email', 'password1', 'password2',
+            'is_staff', 'is_active')}
+        ),
+    )
+    search_fields = ('email',)
+    ordering = ('id',)
+
+@admin.register(Day)
 class DayAdmin(admin.ModelAdmin):
     def has_add_permission(self, request):
         number_of_days = Day.objects.count()
@@ -10,10 +35,8 @@ class DayAdmin(admin.ModelAdmin):
             return True
 
 # Register your models here.
-admin.site.register(Person)
 admin.site.register(Coach)
 admin.site.register(Athlete)
 admin.site.register(Income)
 admin.site.register(Expense)
 admin.site.register(Token)
-admin.site.register(Day, DayAdmin)
