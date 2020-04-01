@@ -37,13 +37,13 @@
       <div class="collapse navbar-collapse" id="navbarResponsive">
         <ul class="navbar-nav ml-auto">
           <li class="nav-item">
-            <a class="nav-link js-scroll-trigger" href="#about">About</a>
+            <a class="nav-link js-scroll-trigger" href="{% url 'sign-up' %}">Sign-Up</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link js-scroll-trigger" href="#projects">Projects</a>
+            <a class="nav-link js-scroll-trigger" href="{% url 'login' %}">Login</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link js-scroll-trigger" href="#signup">Contact</a>
+            <a class="nav-link js-scroll-trigger" href="https://github.com/Hamifthi">Projects</a>
           </li>
         </ul>
       </div>
@@ -56,7 +56,7 @@
       <div class="mx-auto text-center">
         <h1 class="mx-auto my-0 text-uppercase">Gym App</h1>
         <h2 class="text-white-50 mx-auto mt-2 mb-5">An opensource django app</h2>
-        <a href="#about" class="btn btn-primary js-scroll-trigger">Get Started</a>
+        <a href="{% url 'sign-up' %}" class="btn btn-primary js-scroll-trigger">Get Started</a>
       </div>
     </div>
   </header>
@@ -197,8 +197,8 @@
         <a href="https://twitter.com/HamedFthi" class="mx-2">
           <i class="fab fa-twitter"></i>
         </a>
-        <a href="#" class="mx-2">
-          <i class="fab fa-facebook-f"></i>
+        <a href="https://www.linkedin.com/in/hamed-fathi-727568127/" class="mx-2">
+          <i class="fab fa-linkedin"></i>
         </a>
         <a href="https://github.com/Hamifthi" class="mx-2">
           <i class="fab fa-github"></i>

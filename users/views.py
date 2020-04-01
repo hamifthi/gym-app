@@ -38,7 +38,7 @@ class Register(View):
             password = make_password(form.cleaned_data['password1'])
             user_account = Person.objects.create(name=name, last_name=last_name, email=email,
             password=password, is_active=False)
-            message = f"To activate your account please click on this link {request.build_absolute_uri('/register/')}?email={email}&code={user_account.code}"
+            message = f"To activate your account please click on this link {request.build_absolute_uri()}?email={email}&code={user_account.code}"
             send_mail('Activating your account', message, settings.EMAIL_HOST_USER,
             recipient_list=[email])
             message = 'The activation link has been sent to your account'
@@ -271,6 +271,12 @@ class Login(View):
 
     def get(self, request, *args, **kwargs):
         return render(request, 'login.html')
+
+@method_decorator(csrf_exempt, name='dispatch')
+class Logout(View):
+    def get(self, request, *args, **kwargs):
+        context = {}
+        return render(request, 'index.html', context)
 
 @method_decorator(csrf_exempt, name='dispatch')
 class ResetPassword(View):
