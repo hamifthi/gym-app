@@ -251,43 +251,6 @@ class TotalTransactionReport(View):
         return JsonResponse(info, encoder=JSONEncoder)
 
 @method_decorator(csrf_exempt, name='dispatch')
-class Login(View):
-    def post(self, request, *args, **kwargs):
-        email = request.POST['email']
-        password = request.POST['password']
-        if Person.objects.filter(email=email).exists():
-            user = Person.objects.get(email=email)
-            if check_password(password, user.password):
-                token = Token.objects.get(user=user).token
-                context = {'token': token}
-                return render(request, 'login.html', context)
-            else:
-                context = {'message': 'You entered wrong password please try again or if you forgot your\
-                    password go to forgot pass page'}
-                return render(request, 'login.html', context)
-        else:
-            context = {'message': 'You are not sign up yet please first sign up.'}
-            return redirect(reverse('register'))
-
-    def get(self, request, *args, **kwargs):
-        return render(request, 'login.html')
-
-@method_decorator(csrf_exempt, name='dispatch')
-class Logout(View):
-    def get(self, request, *args, **kwargs):
-        context = {}
-        return render(request, 'index.html', context)
-
-@method_decorator(csrf_exempt, name='dispatch')
-class ResetPassword(View):
-    def post(self, request, *args, **kwargs):
-        return render(request, 'resetpassword.html')
-
-    def get(self, request, *args, **kwargs):
-        return render(request, 'resetpassword.html')
-
-
-@method_decorator(csrf_exempt, name='dispatch')
 class Index(View):
     def get(self, request, *args, **kwargs):
         context = {}
