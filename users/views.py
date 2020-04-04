@@ -1,4 +1,5 @@
 from django.contrib.auth.hashers import make_password, check_password
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse, HttpResponse
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
@@ -82,7 +83,7 @@ class Register(View):
             return render(request, 'register.html', {'message': message, 'form': PersonCreationForm()})
                 
 @method_decorator(csrf_exempt, name='dispatch')
-class AthleteRegister(View):
+class AthleteRegister(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         # user has the requestcode
         if user_recaptcha_fails(request):
@@ -114,7 +115,7 @@ class AthleteRegister(View):
         return render(request, 'athlete_register.html', {'message': message, 'form': AthleteRegisterForm()})
 
 @method_decorator(csrf_exempt, name='dispatch')
-class CoachRegister(View):
+class CoachRegister(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         # user has the requestcode
         if user_recaptcha_fails(request):
@@ -146,7 +147,7 @@ class CoachRegister(View):
         return render(request, 'coach_register.html', {'message': message, 'form': CoachRegisterForm()})
 
 @method_decorator(csrf_exempt, name='dispatch')
-class SubmitIncome(View):
+class SubmitIncome(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         token = request.POST['token']
         user = Token.objects.get(token=token).user
@@ -161,7 +162,7 @@ class SubmitIncome(View):
         }, encoder=JSONEncoder)
 
 @method_decorator(csrf_exempt, name='dispatch')
-class SubmitExpense(View):
+class SubmitExpense(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         token = request.POST['token']
         user = Token.objects.get(token=token).user
@@ -176,7 +177,7 @@ class SubmitExpense(View):
         }, encoder=JSONEncoder)
 
 @method_decorator(csrf_exempt, name='dispatch')
-class IncomeTransactionReport(View):
+class IncomeTransactionReport(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         # add other situations whether if the user doesn't exist or there are no transactions
         token = request.POST['token']
@@ -197,7 +198,7 @@ class IncomeTransactionReport(View):
         return JsonResponse({'income': income}, encoder=JSONEncoder)
 
 @method_decorator(csrf_exempt, name='dispatch')
-class ExpenseTransactionReport(View):
+class ExpenseTransactionReport(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         token = request.POST['token']
         user = Token.objects.filter(token=token).get().user
@@ -217,7 +218,7 @@ class ExpenseTransactionReport(View):
         return JsonResponse({'expense': expense}, encoder=JSONEncoder)
 
 @method_decorator(csrf_exempt, name='dispatch')
-class TotalTransactionReport(View):
+class TotalTransactionReport(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         token = request.POST['token']
         user = Token.objects.filter(token=token).get().user

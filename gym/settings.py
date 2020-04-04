@@ -134,5 +134,5 @@ EMAIL_HOST_USER = "hami.fthi@gmail.com"
 EMAIL_HOST_PASSWORD = secrets['Email_Password']
 RECAPTCHA_SECRET_KEY = secrets['RECAPTCHA_SECRET_KEY']
 
-LOGIN_REDIRECT_URL = 'sign-up'
+LOGIN_REDIRECT_URL = 'home'
 LOGOUT_REDIRECT_URL = 'login'
