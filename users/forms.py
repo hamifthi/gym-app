@@ -88,8 +88,7 @@ class AthleteRegisterForm(ModelForm):
         days_of_week = set(self.cleaned_data.get('days_of_week'))
         coach = Coach.objects.get(pk=int(self.data['trainer']))
         coach_days_of_week = set(coach.days_of_week.all())
-        print(days_of_week not in coach_days_of_week)
-        if days_of_week != coach_days_of_week:
+        if not all(list(map(lambda day: day in coach_days_of_week, days_of_week))):
             raise ValidationError('Your coach goes to gym in different days')
         return days_of_week
 
