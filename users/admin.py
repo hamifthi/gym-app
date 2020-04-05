@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 
 from .forms import PersonCreationForm, PersonChangeForm
-from .models import Person, Coach, Athlete, Token, Income, Expense, Day
+from .models import Person, Coach, Athlete, Token, Day
 
 @admin.register(Person)
 class PersonAdmin(UserAdmin):
@@ -37,6 +37,4 @@ class DayAdmin(admin.ModelAdmin):
 # Register your models here.
 admin.site.register(Coach)
 admin.site.register(Athlete)
-admin.site.register(Income)
-admin.site.register(Expense)
 admin.site.register(Token)

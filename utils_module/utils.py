@@ -32,3 +32,6 @@ def user_recaptcha_fails(request):
 
 def random_code():
         return binascii.b2a_hex(os.urandom(24)).decode('utf-8')
+
+if __name__ == '__main__':
+    pass
