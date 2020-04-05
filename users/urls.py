@@ -3,7 +3,6 @@ from django.urls import path, re_path, reverse_lazy
 from . import views
 
 urlpatterns = [
-    path('', views.Index.as_view(), name='home'),
     path('register/', views.Register.as_view(), name='sign-up'),
     path('login/', auth_views.LoginView.as_view(template_name='login.html'), name='login'),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
