@@ -4,17 +4,16 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render, reverse
 from django.core.mail import send_mail
-
 from django.conf import settings
 from django.views import View
 
 from users.models import Person, Token, Athlete, Coach
 from utils_module.utils import user_recaptcha_fails
+from finance.models import Expense
 from json import JSONEncoder
 from .decorators import *
 from .choices import *
 from .forms import *
-
 import jwt
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -78,7 +77,7 @@ class Register(View):
             message = 'Welcome. Please fill out the fields and Sign Up'
             return render(request, 'register.html', {'message': message, 'form': PersonCreationForm()})
 
-@method_decorator(user_is_not_Athlete, name='dispatch')
+@method_decorator(user_is_Athlete, name='dispatch')
 @method_decorator(csrf_exempt, name='dispatch')
 class AthleteRegister(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
@@ -96,11 +95,15 @@ class AthleteRegister(LoginRequiredMixin, View):
             days_of_week = form.cleaned_data['days_of_week']
             user = form.cleaned_data['user']
             coach = form.cleaned_data['trainer']
+            transaction_amount = form.cleaned_data['transaction_amount']
             start_time = form.cleaned_data['start_time']
             end_time = form.cleaned_data['end_time']
             user_account = Athlete.objects.create(age=age, sport_field=sport_field, start_time=start_time,
-                                        end_time=end_time, user=user, trainer=coach)
+                                        end_time=end_time, user=user, trainer=coach,
+                                        transaction_amount=transaction_amount)
             user_account.days_of_week.set(days_of_week)
+            Expense.objects.create(details='user registration gym membership',
+                amount=transaction_amount, user=user)
             message = 'This user now becomes an athlete in your gym'
             return render(request, 'athlete_register.html',
             {'message': message, 'form': AthleteRegisterForm()})
@@ -113,7 +116,7 @@ class AthleteRegister(LoginRequiredMixin, View):
         message = 'Welcome to this page. Please fill out the fields and submit the form'
         return render(request, 'athlete_register.html', {'message': message, 'form': AthleteRegisterForm()})
 
-@method_decorator(user_is_not_Coach, name='dispatch')
+@method_decorator(user_is_Coach, name='dispatch')
 @method_decorator(csrf_exempt, name='dispatch')
 class CoachRegister(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
@@ -130,11 +133,11 @@ class CoachRegister(LoginRequiredMixin, View):
             sport_field = form.cleaned_data['sport_field']
             days_of_week = form.cleaned_data['days_of_week']
             user = form.cleaned_data['user']
-            salary = form.cleaned_data['salary']
+            transaction_amount = form.cleaned_data['transaction_amount']
             start_time = form.cleaned_data['start_time']
             end_time = form.cleaned_data['end_time']
             user_account = Coach.objects.create(age=age, sport_field=sport_field, start_time=start_time,
-                                        end_time=end_time, salary=salary, user=user)
+                                        end_time=end_time, transaction_amount=transaction_amount, user=user)
             user_account.days_of_week.set(days_of_week)
             message = 'This user now becomes a coach in your gym'
             return render(request, 'coach_register.html',

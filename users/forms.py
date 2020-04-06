@@ -71,7 +71,7 @@ class AthleteRegisterForm(ModelForm):
         super().__init__(*args, **kwargs)
         self.fields['age'].widget.attrs['min'] = 10
         self.fields['age'].widget.attrs['max'] = 100
-        self.fields['last_payment'].required = True
+        self.fields['transaction_amount'].required = True
         self.fields['trainer'].required = False
         self.fields['start_time'].required = False
         self.fields['end_time'].required = False

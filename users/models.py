@@ -47,6 +47,8 @@ class GymAccount(models.Model):
     days_of_week = models.ManyToManyField(Day)
     start_time = models.TimeField(null=True)
     end_time = models.TimeField(null=True)
+    last_transaction = models.DateField(auto_now=True)
+    transaction_amount = models.BigIntegerField(null=True)
     user = models.OneToOneField(Person, on_delete=models.CASCADE)
 
     class Meta:
@@ -54,17 +56,20 @@ class GymAccount(models.Model):
 
 # Coach class
 class Coach(GymAccount):
-    salary = models.BigIntegerField(default = 1500000)
-    last_income = models.OneToOneField('finance.Income', on_delete=models.CASCADE, null=True)
 
     def __str__(self):
         return f'{self.user.name}_{self.user.last_name}'
 
+Coach._meta.get_field('last_transaction').verbose_name = 'last_stipend'
+Coach._meta.get_field('transaction_amount').verbose_name = 'salary'
+
 # Athlete class
 class Athlete(GymAccount):
-    last_payment = models.OneToOneField('finance.Expense', on_delete=models.CASCADE, null=True)
     trainer = models.ForeignKey(Coach, on_delete=models.SET_NULL, null=True, blank=True,
     related_name='user_trainer')
 
     def __str__(self):
         return f'{self.user.name}_{self.user.last_name}'
+
+Athlete._meta.get_field('last_transaction').verbose_name = 'last_payment'
+Athlete._meta.get_field('transaction_amount').verbose_name = 'gym_membership'
