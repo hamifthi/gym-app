@@ -1,4 +1,5 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Count, Sum
@@ -7,15 +8,18 @@ from django.shortcuts import render
 from django.views import View
 from django.apps import apps
 
-from finance.models import Income, Expense
+from .models import Income, Expense
+from .forms import IncomeSubmitForm, ExpenseSubmitForm
 
 from dateutil import relativedelta
+import datetime
 
 Token = apps.get_model('users', 'Token')
 
 # Create your views here.
 @method_decorator(csrf_exempt, name='dispatch')
-class SubmitIncome(LoginRequiredMixin, View):
+@method_decorator(login_required, name='dispatch')
+class SubmitIncome(View):
     def post(self, request, *args, **kwargs):
         token = request.POST['token']
         user = Token.objects.get(token=token).user
@@ -28,6 +32,10 @@ class SubmitIncome(LoginRequiredMixin, View):
         return JsonResponse({
             'status': 'ok'
         }, encoder=JSONEncoder)
+
+    def get(self, request, *args, **kwargs):
+        message = 'Welcome please fill out the form below and submit your income'
+        return render(request, 'submit_income.html', {'message': message, 'form': IncomeSubmitForm()})
 
 @method_decorator(csrf_exempt, name='dispatch')
 class SubmitExpense(LoginRequiredMixin, View):
@@ -43,6 +51,10 @@ class SubmitExpense(LoginRequiredMixin, View):
         return JsonResponse({
             'status': 'ok'
         }, encoder=JSONEncoder)
+
+    def get(self, request, *args, **kwargs):
+        message = 'Welcome please fill out the form below and submit your income'
+        return render(request, 'submit_income.html', {'message': message, 'form': ExpenseSubmitForm()})
 
 @method_decorator(csrf_exempt, name='dispatch')
 class IncomeTransactionReport(LoginRequiredMixin, View):
