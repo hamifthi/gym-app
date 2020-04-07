@@ -12,7 +12,6 @@ from utils_module.utils import user_recaptcha_fails
 from finance.models import Expense
 from json import JSONEncoder
 from .decorators import *
-from .choices import *
 from .forms import *
 import jwt
 
@@ -61,7 +60,7 @@ class Register(View):
                         'email': user.email
                     }
                     token = Token.objects.create(user=user,
-                    token=jwt.encode(payload, settings.SECRET_KEY))
+                    token = jwt.encode(payload, settings.SECRET_KEY))
                     message = f'Your account has been activated.'
                     return render(request, 'register.html', {'message': message, 'form': PersonCreationForm()})
                 else:
@@ -85,7 +84,7 @@ class AthleteRegister(LoginRequiredMixin, View):
         if user_recaptcha_fails(request):
             error_message = 'the captcha is not correct maybe you are robot?\
             please enter the code correctly'
-            return render(request, 'athlete_register.html',
+            return render(request, 'register_athlete.html',
             {'error_message': error_message, 'form': AthleteRegisterForm()}, status=429)
 
         form = AthleteRegisterForm(request.POST)
@@ -105,16 +104,16 @@ class AthleteRegister(LoginRequiredMixin, View):
             Expense.objects.create(details='user registration gym membership',
                 amount=transaction_amount, user=user)
             message = 'This user now becomes an athlete in your gym'
-            return render(request, 'athlete_register.html',
+            return render(request, 'register_athlete.html',
             {'message': message, 'form': AthleteRegisterForm()})
         else:
             error_message = 'Please solve the error and try again'
-            return render(request, 'athlete_register.html',
+            return render(request, 'register_athlete.html',
             {'error_message': error_message, 'form': form})
         
     def get(self, request, *args, **kwargs):
         message = 'Welcome to this page. Please fill out the fields and submit the form'
-        return render(request, 'athlete_register.html', {'message': message, 'form': AthleteRegisterForm()})
+        return render(request, 'register_athlete.html', {'message': message, 'form': AthleteRegisterForm()})
 
 @method_decorator(user_is_Coach, name='dispatch')
 @method_decorator(csrf_exempt, name='dispatch')
@@ -124,7 +123,7 @@ class CoachRegister(LoginRequiredMixin, View):
         if user_recaptcha_fails(request):
             error_message = 'the captcha is not correct maybe you are robot?\
             please enter the code correctly'
-            return render(request, 'coach_register.html',
+            return render(request, 'register_coach.html',
             {'error_message': error_message, 'form': CoachRegisterForm()}, status=429)
 
         form = CoachRegisterForm(request.POST)
@@ -140,16 +139,16 @@ class CoachRegister(LoginRequiredMixin, View):
                                         end_time=end_time, transaction_amount=transaction_amount, user=user)
             user_account.days_of_week.set(days_of_week)
             message = 'This user now becomes a coach in your gym'
-            return render(request, 'coach_register.html',
+            return render(request, 'register_coach.html',
             {'message': message, 'form': CoachRegisterForm()})
         else:
             error_message = 'Please solve the error and try again'
-            return render(request, 'coach_register.html',
+            return render(request, 'register_coach.html',
             {'error_message': error_message, 'form': form})
     
     def get(self, request, *args, **kwargs):
         message = 'Welcome to this page. Please fill out the fields and submit the form'
-        return render(request, 'coach_register.html', {'message': message, 'form': CoachRegisterForm()})
+        return render(request, 'register_coach.html', {'message': message, 'form': CoachRegisterForm()})
 
 class Index(View):
     def get(self, request, *args, **kwargs):

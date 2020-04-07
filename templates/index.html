@@ -42,10 +42,10 @@
         <ul class="navbar-nav ml-auto">
           {% if user.is_authenticated %}
             <li class="nav-item">
-              <a class="nav-link js-scroll-trigger" href="{% url 'athlete_register' %}">Athlete Register</a>
+              <a class="nav-link js-scroll-trigger" href="{% url 'register_athlete' %}">Athlete Register</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link js-scroll-trigger" href="{% url 'coach_register' %}">Coach Register</a>
+              <a class="nav-link js-scroll-trigger" href="{% url 'register_coach' %}">Coach Register</a>
             </li>
             <ul class="navbar-nav">
               <li class="nav-item dropdown">

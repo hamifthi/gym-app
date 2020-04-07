@@ -2,8 +2,9 @@ from django.shortcuts import render
 
 from .forms import PersonCreationForm
 from .models import Coach, Athlete
+# from datetime.date import today
 
-def user_is_not_Coach(function):
+def user_is_Coach(function):
     def wrap(request, *args, **kwargs):
         try:
             coach = Coach.objects.get(user=request.user)
@@ -13,7 +14,7 @@ def user_is_not_Coach(function):
             return function(request, *args, **kwargs)
     return wrap
 
-def user_is_not_Athlete(function):
+def user_is_Athlete(function):
     def wrap(request, *args, **kwargs):
         try:
             athlete = Athlete.objects.get(user=request.user)

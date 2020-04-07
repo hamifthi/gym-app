@@ -38,6 +38,6 @@ urlpatterns = [
             ),
         name='reset_password_complete'
         ),
-    path('athlete/', views.AthleteRegister.as_view(), name='athlete_register'),
-    path('coach/', views.CoachRegister.as_view(), name='coach_register'),
+    path('athlete/', views.AthleteRegister.as_view(), name='register_athlete'),
+    path('coach/', views.CoachRegister.as_view(), name='register_coach'),
 ]

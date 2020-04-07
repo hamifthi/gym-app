@@ -43,10 +43,10 @@
           </li>
           {% if user.is_authenticated %}
             <li class="nav-item">
-              <a class="nav-link" href="{% url 'athlete_register' %}">Athlete Page</a>
+              <a class="nav-link" href="{% url 'register_athlete' %}">Athlete Page</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{% url 'coach_register' %}">Coach Page</a>
+              <a class="nav-link" href="{% url 'register_coach' %}">Coach Page</a>
             </li>
           {% endif %}
         </ul>
