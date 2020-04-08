@@ -1,10 +1,9 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
+from django.shortcuts import render, redirect
 from django.db.models import Count, Sum
 from django.http import JsonResponse
-from django.shortcuts import render
 from django.views import View
 from django.apps import apps
 
@@ -18,20 +17,20 @@ Token = apps.get_model('users', 'Token')
 
 # Create your views here.
 @method_decorator(csrf_exempt, name='dispatch')
-@method_decorator(login_required, name='dispatch')
-class SubmitIncome(View):
+class SubmitIncome(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
-        token = request.POST['token']
-        user = Token.objects.get(token=token).user
-        if 'date' not in request.POST:
-            date = datetime.datetime.now()
+        form = IncomeSubmitForm(request.POST)
+        if form.is_valid():
+            details = form.cleaned_data['details']
+            date = form.cleaned_data['date']
+            amount = form.cleaned_data['amount']
+            user = request.user
+            Income.objects.create(details=details, date=date, amount=amount, user=user)
+            return redirect('home')
         else:
-            date = request.POST['date']
-        Income.objects.create(user=user, amount=request.POST['amount'],
-        details=request.POST['details'], date=date)
-        return JsonResponse({
-            'status': 'ok'
-        }, encoder=JSONEncoder)
+            error_message = 'Please solve the error and try again'
+            return render(request, 'submit_income.html', context={'error_message': error_message,
+            'form': form}, status=422)
 
     def get(self, request, *args, **kwargs):
         message = 'Welcome please fill out the form below and submit your income'
@@ -40,28 +39,29 @@ class SubmitIncome(View):
 @method_decorator(csrf_exempt, name='dispatch')
 class SubmitExpense(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
-        token = request.POST['token']
-        user = Token.objects.get(token=token).user
-        if 'date' not in request.POST:
-            date = datetime.datetime.now()
+        form = ExpenseSubmitForm(request.POST)
+        if form.is_valid():
+            details = form.cleaned_data['details']
+            date = form.cleaned_data['date']
+            amount = form.cleaned_data['amount']
+            user = request.user
+            Expense.objects.create(details=details, date=date, amount=amount, user=user)
+            return redirect('home')
         else:
-            date = request.POST['date']
-        Expense.objects.create(user=user, amount=request.POST['amount'],
-        details=request.POST['details'], date=date)
-        return JsonResponse({
-            'status': 'ok'
-        }, encoder=JSONEncoder)
+            error_message = 'Please solve the error and try again'
+            return render(request, 'submit_expense.html', context={'error_message': error_message,
+            'form': form}, status=422)
 
     def get(self, request, *args, **kwargs):
-        message = 'Welcome please fill out the form below and submit your income'
-        return render(request, 'submit_income.html', {'message': message, 'form': ExpenseSubmitForm()})
+        message = 'Welcome please fill out the form below and submit your expense'
+        return render(
+            request, 'submit_expense.html', {'message': message, 'form': ExpenseSubmitForm()}
+            )
 
 @method_decorator(csrf_exempt, name='dispatch')
 class IncomeTransactionReport(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         # add other situations whether if the user doesn't exist or there are no transactions
-        token = request.POST['token']
-        user = Token.objects.filter(token=token).get().user
         if 'from' and 'to' in request.POST:
             income = Income.objects.filter(user=user,
             date__gte=datetime.date.fromisoformat(request.POST['from']),
