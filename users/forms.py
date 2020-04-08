@@ -32,11 +32,15 @@ class CoachRegisterForm(ModelForm):
     class Meta:
         model = Coach
         fields = '__all__'
+        widgets =  {
+            'last_transaction': FengyuanChenDatePickerInput(), # datepicker pop up
+        }
+        
         help_texts = {'age': ('Please enter your age here'),
                                 'salary': ('Please enter your salary here.'),
                                 'start_time': ('Work hour starting time'),
                                 'end_time': ('Work hour ending time'),
-                                'user': ('Who are you? Or better to say by which person are you?')}
+                                'user': ('Who are you? Or better to say which person are you?')}
         
         error_messages = {'start_time': {'invalid': 'Enter time in a correct format HH:mm:ss for instance:\
                                                                     18:00:00'},
@@ -53,13 +57,13 @@ class AthleteRegisterForm(ModelForm):
         model = Athlete
         fields = '__all__'
         widgets =  {
-            'last_payment': FengyuanChenDatePickerInput(), # datepicker pop up
+            'last_transaction': FengyuanChenDatePickerInput(), # datepicker pop up
         }
 
         help_texts = {'age': ('Please enter your age here'),
                                 'start_time': ('Training starting time'),
                                 'end_time': ('Training ending time'),
-                                'user': ('Who are you? Or better to say by which person are you?'),
+                                'user': ('Who are you? Or better to say which person are you?'),
                                 'trainer': ('Which coach do you want to work with')}
 
         error_messages = {'start_time': {'invalid': 'Enter time in a correct format HH:mm:ss for instance:\
@@ -78,7 +82,10 @@ class AthleteRegisterForm(ModelForm):
     
     def clean_sport_field(self):
         sport_field = self.cleaned_data.get('sport_field')
-        coach = Coach.objects.get(pk=int(self.data['trainer']))
+        try:
+            coach = Coach.objects.get(pk=int(self.data['trainer']))
+        except:
+            return sport_field
         if coach.sport_field != sport_field:
             raise ValidationError(f'Your sport field and your coach sport field must be the same. Your\
                 coach sport field is {coach.sport_field}')
@@ -86,7 +93,10 @@ class AthleteRegisterForm(ModelForm):
 
     def clean_days_of_week(self):
         days_of_week = set(self.cleaned_data.get('days_of_week'))
-        coach = Coach.objects.get(pk=int(self.data['trainer']))
+        try:
+            coach = Coach.objects.get(pk=int(self.data['trainer']))
+        except:
+            return days_of_week
         coach_days_of_week = set(coach.days_of_week.all())
         if not all(list(map(lambda day: day in coach_days_of_week, days_of_week))):
             raise ValidationError('Your coach goes to gym in different days')
@@ -94,7 +104,10 @@ class AthleteRegisterForm(ModelForm):
 
     def clean_start_time(self):
         start_time = self.cleaned_data.get('start_time')
-        coach = Coach.objects.get(pk=int(self.data['trainer']))
+        try:
+            coach = Coach.objects.get(pk=int(self.data['trainer']))
+        except:
+            return start_time
         if start_time < coach.start_time:
             raise ValidationError(f'Your coach arrives at the gym later than this time. He or She arrives at\
                                                     {coach.start_time}')
@@ -102,7 +115,10 @@ class AthleteRegisterForm(ModelForm):
 
     def clean_end_time(self):
         end_time = self.cleaned_data.get('end_time')
-        coach = Coach.objects.get(pk=int(self.data['trainer']))
+        try:
+            coach = Coach.objects.get(pk=int(self.data['trainer']))
+        except:
+            return end_time
         if end_time > coach.end_time:
             raise ValidationError(f'Your coach leaves the gym sooner than this time. He or She arrives at\
                                                     {coach.end_time}')

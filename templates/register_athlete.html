@@ -4,64 +4,72 @@
 
 {% block content %}
   <script src='https://www.google.com/recaptcha/api.js'></script>
-  <div class="container mt-3  mb-2">
-    {% if message %}
-      <div class="alert alert-primary  w-50" role="alert">
-        {{ message|safe }}
-      </div>
-    {% endif %}
-
-    {% if error_message %}
-      <div class="alert alert-danger" role="alert">
-        {{ error_message|safe }}
-      </div>
-    {% endif %}
-
+  
     <form method="post">
         {% csrf_token %}
-          <div class ="form-width  w-50">
-            <div class="form-row">
-              <div class="form-group col-md-6 mb-0">
-                {{ form.age|as_crispy_field }}
+        <div class="row justify-content-center">
+            <div class ="form-width  w-75">
+              <div class="card">
+                <div class="card-body">
+                  {% if message %}
+                      <div class="alert alert-primary" role="alert">
+                        {{ message|safe }}
+                      </div>
+                    {% endif %}
+                    {% if error_message %}
+                      <div class="alert alert-danger" role="alert">
+                        {{ error_message|safe }}
+                      </div>
+                    {% endif %}
+                  <div class="form-row">
+                    <div class="form-group col-md-6 mb-0">
+                      {{ form.age|as_crispy_field }}
+                    </div>
+                    <div class="form-group col-md-6 mb-0">
+                      {{ form.sport_field|as_crispy_field }}
+                    </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group col-md-6 mb-0">
+                    {{ form.last_transaction|as_crispy_field }}
+                  </div>
+                  <div class="form-group col-md-6 mb-0">
+                    {{ form.transaction_amount|as_crispy_field }}
+                  </div>
               </div>
-              <div class="form-group col-md-6 mb-0">
-                {{ form.transaction_amount|as_crispy_field }}
+              <div class="form-row">
+                <div class="form-group col-md-6 mb-0">
+                  {{ form.user|as_crispy_field }}
+                </div>
+                <div class="form-group col-md-6 mb-0">
+                  {{ form.trainer|as_crispy_field }}
+                </div>
               </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group col-md-6 mb-0">
-              {{ form.sport_field|as_crispy_field }}
+              <div class="form-row">
+                <div class="form-group col-md-6 mb-0">
+                  {{ form.start_time|as_crispy_field }}
+                </div>
+                <div class="form-group col-md-6 mb-0">
+                  {{ form.end_time|as_crispy_field }}
+                </div>
+              </div>
+                <div class="form-row">
+                  <div class="form-group col-md-6 mb-0">
+                    {{ form.days_of_week|as_crispy_field }}
+                  </div>
+                </div>
+                <div class="mb-2">
+                  <label>Aren't you a robot</label>
+                  <div class="g-recaptcha" data-sitekey="6LcOTtoUAAAAAB1SiuVIDsoON-5nlMWUkTnNTvR3">
+                  </div>
+                </div>
+              <div>
+                <button type="submit" class="btn btn-primary">Submit</button>
+              </div>
             </div>
-            <div class="form-group col-md-6 mb-0">
-              {{ form.days_of_week|as_crispy_field }}
-            </div>
-        </div>
-        <div class="form-row">
-          <div class="form-group col-md-6 mb-0">
-            {{ form.user|as_crispy_field }}
-          </div>
-          <div class="form-group col-md-6 mb-0">
-            {{ form.trainer|as_crispy_field }}
           </div>
         </div>
-        <div class="form-row">
-          <div class="form-group col-md-6 mb-0">
-            {{ form.start_time|as_crispy_field }}
-          </div>
-          <div class="form-group col-md-6 mb-0">
-            {{ form.end_time|as_crispy_field }}
-          </div>
-        </div>
-        <div class="mb-3">
-          <label>Aren't you a robot</label>
-          <div class="g-recaptcha" data-sitekey="6LcOTtoUAAAAAB1SiuVIDsoON-5nlMWUkTnNTvR3">
-          </div>
-        </div>
-        <div>
-          <button type="submit" class="btn btn-primary">Submit</button>
-        </div>
-      </div>
-  </div>
+    </div>
   </form>
 
 <script type="text/javascript">

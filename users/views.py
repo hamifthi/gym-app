@@ -41,7 +41,7 @@ class Register(View):
         else:
             error_message = 'Please solve the error and try again'
             return render(request, 'register.html', {'error_message': error_message, 'form': form},
-            status=404)
+            status=422)
     
     def get(self, request, *args, **kwargs):
         # user click on activation link
@@ -59,8 +59,7 @@ class Register(View):
                         'id' : user.id,
                         'email': user.email
                     }
-                    token = Token.objects.create(user=user,
-                    token = jwt.encode(payload, settings.SECRET_KEY))
+                    Token.objects.create(user=user, token = jwt.encode(payload, settings.SECRET_KEY))
                     message = f'Your account has been activated.'
                     return render(request, 'register.html', {'message': message, 'form': PersonCreationForm()})
                 else:
@@ -80,26 +79,30 @@ class Register(View):
 @method_decorator(csrf_exempt, name='dispatch')
 class AthleteRegister(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
-        # user has the requestcode
+        form = AthleteRegisterForm(request.POST)
         if user_recaptcha_fails(request):
             error_message = 'the captcha is not correct maybe you are robot?\
             please enter the code correctly'
             return render(request, 'register_athlete.html',
-            {'error_message': error_message, 'form': AthleteRegisterForm()}, status=429)
+            {'error_message': error_message, 'form': form}, status=429)
 
-        form = AthleteRegisterForm(request.POST)
         if form.is_valid():
             age = form.cleaned_data['age']
             sport_field = form.cleaned_data['sport_field']
             days_of_week = form.cleaned_data['days_of_week']
             user = form.cleaned_data['user']
-            coach = form.cleaned_data['trainer']
+            try:
+                coach = form.cleaned_data['trainer']
+            except:
+                coach = None
             transaction_amount = form.cleaned_data['transaction_amount']
+            last_transaction = form.cleaned_data['last_transaction']
             start_time = form.cleaned_data['start_time']
             end_time = form.cleaned_data['end_time']
-            user_account = Athlete.objects.create(age=age, sport_field=sport_field, start_time=start_time,
-                                        end_time=end_time, user=user, trainer=coach,
-                                        transaction_amount=transaction_amount)
+            user_account = Athlete.objects.create(
+                age=age, sport_field=sport_field, start_time=start_time, end_time=end_time, user=user,
+                trainer=coach, last_transaction=last_transaction, transaction_amount=transaction_amount
+                )
             user_account.days_of_week.set(days_of_week)
             Expense.objects.create(details='user registration gym membership',
                 amount=transaction_amount, user=user)
@@ -109,7 +112,7 @@ class AthleteRegister(LoginRequiredMixin, View):
         else:
             error_message = 'Please solve the error and try again'
             return render(request, 'register_athlete.html',
-            {'error_message': error_message, 'form': form})
+            {'error_message': error_message, 'form': form}, status=422)
         
     def get(self, request, *args, **kwargs):
         message = 'Welcome to this page. Please fill out the fields and submit the form'
@@ -119,24 +122,26 @@ class AthleteRegister(LoginRequiredMixin, View):
 @method_decorator(csrf_exempt, name='dispatch')
 class CoachRegister(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
-        # user has the requestcode
+        form = CoachRegisterForm(request.POST)
         if user_recaptcha_fails(request):
             error_message = 'the captcha is not correct maybe you are robot?\
             please enter the code correctly'
             return render(request, 'register_coach.html',
             {'error_message': error_message, 'form': CoachRegisterForm()}, status=429)
 
-        form = CoachRegisterForm(request.POST)
         if form.is_valid():
             age = form.cleaned_data['age']
             sport_field = form.cleaned_data['sport_field']
             days_of_week = form.cleaned_data['days_of_week']
             user = form.cleaned_data['user']
             transaction_amount = form.cleaned_data['transaction_amount']
+            last_transaction = form.cleaned_data['last_transaction']
             start_time = form.cleaned_data['start_time']
             end_time = form.cleaned_data['end_time']
-            user_account = Coach.objects.create(age=age, sport_field=sport_field, start_time=start_time,
-                                        end_time=end_time, transaction_amount=transaction_amount, user=user)
+            user_account = Coach.objects.create(
+                age=age, sport_field=sport_field, start_time=start_time, user=user, end_time=end_time,
+                transaction_amount=transaction_amount, last_transaction=last_transaction
+                )
             user_account.days_of_week.set(days_of_week)
             message = 'This user now becomes a coach in your gym'
             return render(request, 'register_coach.html',
@@ -144,7 +149,7 @@ class CoachRegister(LoginRequiredMixin, View):
         else:
             error_message = 'Please solve the error and try again'
             return render(request, 'register_coach.html',
-            {'error_message': error_message, 'form': form})
+            {'error_message': error_message, 'form': form}, status=422)
     
     def get(self, request, *args, **kwargs):
         message = 'Welcome to this page. Please fill out the fields and submit the form'
@@ -152,5 +157,4 @@ class CoachRegister(LoginRequiredMixin, View):
 
 class Index(View):
     def get(self, request, *args, **kwargs):
-        context = {}
-        return render(request, 'index.html', context)
+        return render(request, 'index.html')
