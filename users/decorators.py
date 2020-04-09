@@ -8,7 +8,8 @@ def user_is_Coach(function):
     def wrap(request, *args, **kwargs):
         try:
             coach = Coach.objects.get(user=request.user)
-            message = 'You are a coach. you can not become a coach again'
+            message = f'{request.user.name} are a coach. you can not become an\
+                {request.get_full_path()[7:-1]} again.'
             return render(request, 'register.html', {'message': message, 'form': PersonCreationForm()})
         except:
             return function(request, *args, **kwargs)
@@ -18,7 +19,8 @@ def user_is_Athlete(function):
     def wrap(request, *args, **kwargs):
         try:
             athlete = Athlete.objects.get(user=request.user)
-            message = 'You are an athlete. you can not become an athlete again'
+            message = f'{request.user.name} are an athlete. you can not become an\
+                {request.get_full_path()[7:-1]} again.'
             return render(request, 'register.html', {'message': message, 'form': PersonCreationForm()})
         except:
             return function(request, *args, **kwargs)

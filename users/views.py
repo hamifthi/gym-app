@@ -75,6 +75,7 @@ class Register(View):
             message = 'Welcome. Please fill out the fields and Sign Up'
             return render(request, 'register.html', {'message': message, 'form': PersonCreationForm()})
 
+@method_decorator(user_is_Coach, name='dispatch')
 @method_decorator(user_is_Athlete, name='dispatch')
 @method_decorator(csrf_exempt, name='dispatch')
 class AthleteRegister(LoginRequiredMixin, View):
@@ -90,7 +91,7 @@ class AthleteRegister(LoginRequiredMixin, View):
             age = form.cleaned_data['age']
             sport_field = form.cleaned_data['sport_field']
             days_of_week = form.cleaned_data['days_of_week']
-            user = form.cleaned_data['user']
+            user = request.user
             try:
                 coach = form.cleaned_data['trainer']
             except:
@@ -106,7 +107,7 @@ class AthleteRegister(LoginRequiredMixin, View):
             user_account.days_of_week.set(days_of_week)
             Expense.objects.create(details='user registration gym membership',
                 amount=transaction_amount, user=user)
-            message = 'This user now becomes an athlete in your gym'
+            message = f'{user.name}_{user.last_name} now becomes an athlete in your gym'
             return render(request, 'register_athlete.html',
             {'message': message, 'form': AthleteRegisterForm()})
         else:
@@ -118,6 +119,7 @@ class AthleteRegister(LoginRequiredMixin, View):
         message = 'Welcome to this page. Please fill out the fields and submit the form'
         return render(request, 'register_athlete.html', {'message': message, 'form': AthleteRegisterForm()})
 
+@method_decorator(user_is_Athlete, name='dispatch')
 @method_decorator(user_is_Coach, name='dispatch')
 @method_decorator(csrf_exempt, name='dispatch')
 class CoachRegister(LoginRequiredMixin, View):
@@ -133,7 +135,7 @@ class CoachRegister(LoginRequiredMixin, View):
             age = form.cleaned_data['age']
             sport_field = form.cleaned_data['sport_field']
             days_of_week = form.cleaned_data['days_of_week']
-            user = form.cleaned_data['user']
+            user = request.user
             transaction_amount = form.cleaned_data['transaction_amount']
             last_transaction = form.cleaned_data['last_transaction']
             start_time = form.cleaned_data['start_time']
@@ -143,7 +145,7 @@ class CoachRegister(LoginRequiredMixin, View):
                 transaction_amount=transaction_amount, last_transaction=last_transaction
                 )
             user_account.days_of_week.set(days_of_week)
-            message = 'This user now becomes a coach in your gym'
+            message = f'{user.name}_{user.last_name} a coach in your gym'
             return render(request, 'register_coach.html',
             {'message': message, 'form': CoachRegisterForm()})
         else:

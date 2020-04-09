@@ -31,9 +31,10 @@ class PersonChangeForm(UserChangeForm):
 class CoachRegisterForm(ModelForm):
     class Meta:
         model = Coach
-        fields = '__all__'
+        exclude = ['user']
         widgets =  {
-            'last_transaction': FengyuanChenDatePickerInput(), # datepicker pop up
+            # datepicker pop up
+            'last_transaction': FengyuanChenDatePickerInput(attrs={'autocomplete':'off'}),
         }
         
         help_texts = {'age': ('Please enter your age here'),
@@ -55,9 +56,10 @@ class CoachRegisterForm(ModelForm):
 class AthleteRegisterForm(ModelForm):
     class Meta:
         model = Athlete
-        fields = '__all__'
+        exclude = ['user']
         widgets =  {
-            'last_transaction': FengyuanChenDatePickerInput(), # datepicker pop up
+            # datepicker pop up
+            'last_transaction': FengyuanChenDatePickerInput(attrs={'autocomplete':'off'}), 
         }
 
         help_texts = {'age': ('Please enter your age here'),
