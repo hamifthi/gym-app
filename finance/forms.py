@@ -32,26 +32,23 @@ class ExpenseSubmitForm(ModelForm):
             'date': BootstrapDateTimePickerInput(attrs={'autocomplete':'off'}), # datepicker pop up
         }
 
-class IncomeReportForm(Form):
+class ReportForm(Form):
+    choices = (
+        ('income', 'Income'),
+        ('expense', 'Expense')
+    )
+    report_choice = forms.ChoiceField(
+        choices=choices, required=True, initial=None,
+        help_text='Which one of your transactions do you want to see?')
     from_date = forms.DateField(
-        widget=BootstrapDatePickerInput(attrs={'autocomplete':'off'}), 
+        widget=BootstrapDatePickerInput(attrs={'autocomplete':'off'}),
+        input_formats=['%d-%m-%Y'],
         help_text='Please pick a from date to see incomes or leave blank to see all of your incomes',
         required=False
         )
     to_date = forms.DateField(
-        widget=BootstrapDatePickerInput(attrs={'autocomplete':'off'}), 
+        widget=BootstrapDatePickerInput(attrs={'autocomplete':'off'}),
+        input_formats=['%d-%m-%Y'],
         help_text='Please pick a from date to see incomes or leave blank to see all of your incomes',
-        required=False
-        )
-
-class ExpenseReportForm(Form):
-    from_date = forms.DateField(
-        widget=BootstrapDatePickerInput(attrs={'autocomplete':'off'}), 
-        help_text='Please pick a from date to see expenses or leave blank to see all of your expenses',
-        required=False
-        )
-    to_date = forms.DateField(
-        widget=BootstrapDatePickerInput(attrs={'autocomplete':'off'}), 
-        help_text='Please pick a from date to see expenses or leave blank to see all of your expenses',
         required=False
         )

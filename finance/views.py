@@ -6,6 +6,7 @@ from django.views.generic.list import ListView
 from django.shortcuts import render, redirect
 from django.db.models import Count, Sum
 from django.http import JsonResponse
+from django.urls import reverse
 from django.views import View
 from django.apps import apps
 
@@ -59,65 +60,76 @@ class SubmitExpense(LoginRequiredMixin, View):
             )
 
 @method_decorator(csrf_exempt, name='dispatch')
-class IncomeTransactionReport(LoginRequiredMixin, ListView):
+class TransactionDisplay(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         # add other situations whether if the user doesn't exist or there are no transactions
-        form = IncomeReportForm(request.POST)
+        form = ReportForm(request.POST)
         if form.is_valid():
-            from_date = form.cleaned_data['from_date']
-            to_date = form.cleaned_data['to_date']
-            return redirect('income_report')
+            request.session['from_date'] = str(form.cleaned_data['from_date'])
+            request.session['to_date'] = str(form.cleaned_data['to_date'])
+            if form.cleaned_data['report_choice'] == 'income':
+                return redirect(reverse('report_income'))
+            else:
+                return redirect(reverse('report_expense'))
         else:
-            error_message = 'Please solve the error and try again'
+            error_message = 'Please solve the error and try again.'
             return render(request, 'report_income.html', context={'error_message': error_message,
             'form': form}, status=422)
 
     def get(self, request, *args, **kwargs):
-        if from_date and to_date != None:
+            message = 'Welcome to this page for seeing a list of your transactions.'
+            return render(
+                request, 'report_display.html', {'message': message, 'form': ReportForm()}
+                )
+    
+@method_decorator(csrf_exempt, name='dispatch')
+class IncomeTransactionReport(LoginRequiredMixin, ListView):
+    model = Income
+    template_name = 'report_income.html'
+    context_object_name = 'incomes'
+    paginate_by = 5
+
+    def get_queryset(self):
+        from_date = self.request.session['from_date']
+        to_date = self.request.session['to_date']
+        user = self.request.user
+        print('sth')
+        if from_date and to_date != 'None':
             incomes = Income.objects.filter(user=user,
             date__gte=datetime.date.fromisoformat(from_date),
             date__lte=datetime.date.fromisoformat(to_date)).all()
-        elif from_date != None:
+        elif from_date != 'None':
             incomes = Income.objects.filter(user=user,
             date__gte=datetime.date.fromisoformat(from_date),
             date__lte=datetime.date.fromisoformat(from_date) + \
             relativedelta.relativedelta(months=+1)).all()
         else:
             incomes = Income.objects.filter(user=user).all()
-        page = request.POST.get('page', 1)
-        paginator = Paginator(incomes, 5)
-        try:
-            incomes = paginator.page(page)
-        except PageNotAnInteger:
-            incomes = paginator.page(1)
-        except EmptyPage:
-            incomes = paginator.page(paginator.num_pages)
-        message = 'This is your requested list of incomes'
-        return render(request, 'report_income.html', {'message': message, 'incomes': incomes})
-        
-        message = 'Welcome to this page for seeing a list of your incomes'
-        return render(
-            request, 'report_income.html', {'message': message, 'form': IncomeReportForm()}
-            )
-        
+        return incomes
 
 @method_decorator(csrf_exempt, name='dispatch')
-class ExpenseTransactionReport(LoginRequiredMixin, View):
-    def post(self, request, *args, **kwargs):
-        if 'from' and 'to' in request.POST:
-            expense = Expense.objects.filter(user=user,
+class ExpenseTransactionReport(LoginRequiredMixin, ListView):
+    model = Expense
+    template_name = 'report_expense.html'
+    context_object_name = 'expenses'
+    paginate_by = 5
+
+    def get_queryset(self):
+        from_date = self.request.session['from_date']
+        to_date = self.request.session['to_date']
+        user = self.request.user
+        if from_date and to_date != 'None':
+            expenses = Expense.objects.filter(user=user,
             date__gte=datetime.date.fromisoformat(from_date),
-            date__lte=datetime.date.fromisoformat(request.POST['to']))\
-                .aggregate(Count('amount'), Sum('amount'))
-        elif 'from' in request.POST:
-            expense = Expense.objects.filter(user=user,
+            date__lte=datetime.date.fromisoformat(to_date)).all()
+        elif from_date != 'None':
+            expenses = Expense.objects.filter(user=user,
             date__gte=datetime.date.fromisoformat(from_date),
             date__lte=datetime.date.fromisoformat(from_date) + \
-            relativedelta.relativedelta(months=+1)).aggregate(Count('amount'),
-            Sum('amount'))
+            relativedelta.relativedelta(months=+1)).all()
         else:
-            expense = Expense.objects.filter(user=user).aggregate(Count('amount'), Sum('amount'))
-        return JsonResponse({'expense': expense}, encoder=JSONEncoder)
+            expenses = Expense.objects.filter(user=user).all()
+        return expenses
 
 @method_decorator(csrf_exempt, name='dispatch')
 class TotalTransactionReport(LoginRequiredMixin, View):

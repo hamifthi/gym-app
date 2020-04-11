@@ -16,12 +16,12 @@
             </tr>
             </thead>
             <tbody>
-                {% for income in incomes %}
+                {% for expense in expenses %}
                     <tr>
                     <td>{{ forloop.counter }}</td>
-                    <td>{{ income.details }}</td>
-                    <td>{{ income.amount }}</td>
-                    <td>{{ income.date }}</td>
+                    <td>{{ expense.details }}</td>
+                    <td>{{ expense.amount }}</td>
+                    <td>{{ expense.date }}</td>
                     </tr>
                 {% endfor %}
             </tbody>
