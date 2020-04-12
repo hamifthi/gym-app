@@ -17,7 +17,6 @@ class Person(AbstractUser):
     name = models.CharField(max_length=200)
     last_name = models.CharField(max_length=200)
     email = models.EmailField(_('Email Address'), unique=True, null=True)
-    code = models.CharField(max_length=28, null=True, default=random_code)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
@@ -26,13 +25,6 @@ class Person(AbstractUser):
 
     def __str__(self):
                 return f'{self.name}_{self.last_name}'
-
-class Token(models.Model):
-    token = models.CharField(max_length=300)
-    user = models.OneToOneField(Person, on_delete=models.CASCADE)
-    
-    def __str__(self):
-            return f'{self.user.email}_token'
 
 class Day(models.Model):
     day = models.CharField(max_length=9)

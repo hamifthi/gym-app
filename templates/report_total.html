@@ -5,34 +5,37 @@
 {% block content %}
 
 <div class="row justify-content-center">
-    <div class ="mt-4 mb-3 col-8">
-        <table class="table">
-            <thead class="thead-dark">
-            <tr>
-                <th scope="col">transactions</th>
-                <th scope="col">number of transactions</th>
-                <th scope="col">amount</th>
-            </tr>
-            </thead>
-            <tbody>
+    <div class ="mt-4 mb-3 col-6">
+        <div class="card">
+            <div class="card-body">
+                <table class="table">
+                    <thead class="thead-dark">
                     <tr>
-                    <td>Incomes</td>
-                    <td>{{ incomes.amount__count }}</td>
-                    <td>{{ incomes.amount__sum }}</td>
+                        <th scope="col">transactions</th>
+                        <th scope="col">number of transactions</th>
+                        <th scope="col">amount</th>
                     </tr>
-                    <tr>
-                    <td>Expenses</td>
-                    <td>{{ expenses.amount__count }}</td>
-                    <td>{{ expenses.amount__sum }}</td>
-                    </tr>
-                    <tr>
-                      <td>Total</td>
-                    <td>{{ incomes.amount__count|add:expenses.amount__count }}</td>
-                    <td>{{ total }}</td>
-                    </tr>
-            </tbody>
-        </table>
-    </div>
+                    </thead>
+                    <tbody>
+                            <tr>
+                            <td>Incomes</td>
+                            <td>{{ incomes.amount__count }}</td>
+                            <td>{{ incomes.amount__sum }}</td>
+                            </tr>
+                            <tr>
+                            <td>Expenses</td>
+                            <td>{{ expenses.amount__count }}</td>
+                            <td>{{ expenses.amount__sum }}</td>
+                            </tr>
+                            <tr>
+                            <td>Total</td>
+                            <td>{{ incomes.amount__count|add:expenses.amount__count }}</td>
+                            <td>{{ total }}</td>
+                            </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
 </div>
 
 {% endblock %}

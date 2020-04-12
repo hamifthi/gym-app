@@ -7,7 +7,7 @@ from django.core.mail import send_mail
 from django.conf import settings
 from django.views import View
 
-from users.models import Person, Token, Athlete, Coach
+from users.models import Person, Athlete, Coach
 from utils_module.utils import user_recaptcha_fails
 from finance.models import Expense
 from json import JSONEncoder
@@ -59,7 +59,6 @@ class Register(View):
                         'id' : user.id,
                         'email': user.email
                     }
-                    Token.objects.create(user=user, token = jwt.encode(payload, settings.SECRET_KEY))
                     message = f'Your account has been activated.'
                     return render(request, 'register.html', {'message': message, 'form': PersonCreationForm()})
                 else:
