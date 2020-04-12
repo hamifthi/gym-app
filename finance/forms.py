@@ -35,7 +35,8 @@ class ExpenseSubmitForm(ModelForm):
 class ReportForm(Form):
     choices = (
         ('income', 'Income'),
-        ('expense', 'Expense')
+        ('expense', 'Expense'),
+        ('total', 'Total')
     )
     report_choice = forms.ChoiceField(
         choices=choices, required=True, initial=None,

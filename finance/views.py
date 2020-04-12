@@ -69,8 +69,10 @@ class TransactionDisplay(LoginRequiredMixin, View):
             request.session['to_date'] = str(form.cleaned_data['to_date'])
             if form.cleaned_data['report_choice'] == 'income':
                 return redirect(reverse('report_income'))
-            else:
+            elif form.cleaned_data['report_choice'] == 'expense':
                 return redirect(reverse('report_expense'))
+            else:
+                return redirect(reverse('total_transaction_report'))
         else:
             error_message = 'Please solve the error and try again.'
             return render(request, 'report_income.html', context={'error_message': error_message,
@@ -93,8 +95,7 @@ class IncomeTransactionReport(LoginRequiredMixin, ListView):
         from_date = self.request.session['from_date']
         to_date = self.request.session['to_date']
         user = self.request.user
-        print('sth')
-        if from_date and to_date != 'None':
+        if from_date != 'None' and to_date != 'None':
             incomes = Income.objects.filter(user=user,
             date__gte=datetime.date.fromisoformat(from_date),
             date__lte=datetime.date.fromisoformat(to_date)).all()
@@ -118,7 +119,7 @@ class ExpenseTransactionReport(LoginRequiredMixin, ListView):
         from_date = self.request.session['from_date']
         to_date = self.request.session['to_date']
         user = self.request.user
-        if from_date and to_date != 'None':
+        if from_date != 'None' and to_date != 'None':
             expenses = Expense.objects.filter(user=user,
             date__gte=datetime.date.fromisoformat(from_date),
             date__lte=datetime.date.fromisoformat(to_date)).all()
@@ -133,32 +134,35 @@ class ExpenseTransactionReport(LoginRequiredMixin, ListView):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class TotalTransactionReport(LoginRequiredMixin, View):
-    def post(self, request, *args, **kwargs):
-        if 'from' and 'to' in request.POST:
-            income = Income.objects.filter(user=user,
+    def get(self, request, *args, **kwargs):
+        from_date = self.request.session['from_date']
+        to_date = self.request.session['to_date']
+        user = self.request.user
+        if from_date != 'None' and to_date != 'None':
+            incomes = Income.objects.filter(user=user,
             date__gte=datetime.date.fromisoformat(from_date),
-            date__lte=datetime.date.fromisoformat(request.POST['to']))\
+            date__lte=datetime.date.fromisoformat(to_date))\
                 .aggregate(Count('amount'), Sum('amount'))
-            expense = Expense.objects.filter(user=user,
+            expenses = Expense.objects.filter(user=user,
             date__gte=datetime.date.fromisoformat(from_date),
-            date__lte=datetime.date.fromisoformat(request.POST['to']))\
+            date__lte=datetime.date.fromisoformat(to_date))\
                 .aggregate(Count('amount'), Sum('amount'))
-        elif 'from' in request.POST:
-            income = Income.objects.filter(user=user,
+        elif from_date != 'None':
+            incomes = Income.objects.filter(user=user,
             date__gte=datetime.date.fromisoformat(from_date),
             date__lte=datetime.date.fromisoformat(from_date) + \
             relativedelta.relativedelta(months=+1)).aggregate(Count('amount'),
             Sum('amount'))
-            expense = Expense.objects.filter(user=user,
+            expenses = Expense.objects.filter(user=user,
             date__gte=datetime.date.fromisoformat(from_date),
             date__lte=datetime.date.fromisoformat(from_date) + \
             relativedelta.relativedelta(months=+1)).aggregate(Count('amount'),
             Sum('amount'))
         else:
-            income = Income.objects.filter(user=user).aggregate(Count('amount'), Sum('amount'))
-            expense = Expense.objects.filter(user=user).aggregate(Count('amount'), Sum('amount'))
-        info = {}
-        info['income'] = income
-        info['expense'] = expense
-        info['total'] = income['amount__sum'] - expense['amount__sum']
-        return JsonResponse(info, encoder=JSONEncoder)
+            incomes = Income.objects.filter(user=user).aggregate(Count('amount'), Sum('amount'))
+            expenses = Expense.objects.filter(user=user).aggregate(Count('amount'), Sum('amount'))
+        del self.request.session['from_date']
+        del self.request.session['to_date']
+        total = incomes['amount__sum'] - expenses['amount__sum']
+        return render(request, 'report_total.html', {'incomes': incomes, 'expenses': expenses,
+        'total': total})
