@@ -145,7 +145,7 @@ class CoachModelTest(TestCase):
 class AthleteModelTest(TestCase):
     @classmethod
     def setUpTestData(cls):
-        person = Person.objects.create(name='hamed', last_name='fathi', email='hamed.fathi@gmail.com',
+        athlete_person = Person.objects.create(name='hamed', last_name='fathi', email='hamed.fathi@gmail.com',
         password='sthfortest')
         coach_person = Person.objects.create(name='hamid', last_name='fathi', email='hamid.fathi@gmail.com',
         password='sthfortest')
@@ -159,7 +159,8 @@ class AthleteModelTest(TestCase):
         coach.days_of_week.set([saturday, sunday, monday])
         athlete = Athlete.objects.create(
             age=23, sport_field='Crossfit', start_time=time(18, 00, 00), end_time=time(21, 00, 00),
-            last_transaction = date.today(), transaction_amount=150000, user=person, trainer=coach
+            last_transaction = date.today(), transaction_amount=150000, user=athlete_person,
+            trainer=coach
             )
         athlete.days_of_week.set([saturday, sunday, monday])
 

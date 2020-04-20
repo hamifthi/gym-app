@@ -1,4 +1,4 @@
-from users.models import Person, Token, Athlete, Coach, Income, Expense
+from users.models import Person, Athlete, Coach, Income, Expense
 from users.utils import google_recaptcha_verify
 from django.db.models import Count, Sum
 from django.test import TestCase
