@@ -43,7 +43,7 @@ class PersonModelTest(TestCase):
     def test_object_name_is_name_underscore_last_name(self):
         person = Person.objects.get(id=1)
         expected_object_name = f'{person.name}_{person.last_name}'
-        self.assertEqual(expected_object_name, str(person))
+        self.assertEqual(str(person), expected_object_name)
 
 class DayModelTest(TestCase):
     @classmethod

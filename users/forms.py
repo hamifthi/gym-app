@@ -79,46 +79,40 @@ class AthleteRegisterForm(ModelForm):
         self.fields['transaction_amount'].required = True
         self.fields['trainer'].required = False
     
-    def clean_sport_field(self):
-        sport_field = self.cleaned_data.get('sport_field')
-        try:
-            coach = self.data['trainer']
-        except:
-            return sport_field
-        if coach.sport_field != sport_field:
-            raise ValidationError(f'Your sport field and your coach sport field must be the same. Your\
-                coach sport field is {coach.sport_field}')
-        return sport_field
-
-    def clean_days_of_week(self):
-        days_of_week = set(self.cleaned_data.get('days_of_week'))
-        try:
-            coach = self.data['trainer']
-        except:
-            return days_of_week
-        coach_days_of_week = set(coach.days_of_week.all())
-        if not all(list(map(lambda day: day in coach_days_of_week, days_of_week))):
-            raise ValidationError('Your coach goes to gym in different days')
-        return days_of_week
-
-    def clean_start_time(self):
-        start_time = self.cleaned_data.get('start_time')
-        try:
-            coach = self.data['trainer']
-        except:
-            return start_time
-        if start_time < coach.start_time:
-            raise ValidationError(f'Your coach arrives at the gym later than this time. He or She arrives at\
-                                                    {coach.start_time}')
-        return start_time
-
-    def clean_end_time(self):
-        end_time = self.cleaned_data.get('end_time')
-        try:
-            coach = self.data['trainer']
-        except:
-            return end_time
-        if end_time > coach.end_time:
-            raise ValidationError(f'Your coach leaves the gym sooner than this time. He or She leaves at\
-                                                    {coach.end_time}')
-        return end_time
+    def clean(self):
+        cleaned_data = super().clean()
+        if cleaned_data.get('trainer') != None:
+            errors={}
+            coach = cleaned_data.get('trainer')
+            sport_field = cleaned_data['sport_field']
+            # first check the sport field of athlete with the coach
+            if coach.sport_field != sport_field:
+                errors['sport_field'] = ValidationError(
+                    f'Your sport field and your coach sport field must be the same.\
+                    Your coach sport field is {coach.sport_field}'
+                    )
+            # second check the days of athlete with coach
+            days_of_week = set(cleaned_data.get('days_of_week'))
+            coach_days_of_week = set(coach.days_of_week.all())
+            if not all(list(map(lambda day: day in coach_days_of_week, days_of_week))):
+                errors['days_of_week'] = ValidationError('Your coach goes to gym in different days')
+            # third check the start time of athlete with coach
+            start_time = cleaned_data.get('start_time')
+            if start_time < coach.start_time:
+                errors['start_time'] = ValidationError(
+                    f'Your coach arrives at the gym later than this time.\
+                    He or She arrives at {coach.start_time}'
+                    )
+            # forth check the end time of athlete with coach
+            end_time = cleaned_data.get('end_time')
+            if end_time > coach.end_time:
+                errors['end_time'] = ValidationError(
+                    f'Your coach leaves the gym sooner than this time.\
+                    He or She leaves at {coach.end_time}'
+                    )
+            if errors:
+                raise ValidationError(errors)
+            else:
+                return cleaned_data
+        else:
+            return cleaned_data

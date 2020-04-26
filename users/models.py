@@ -17,6 +17,7 @@ class Person(AbstractUser):
     name = models.CharField(max_length=200)
     last_name = models.CharField(max_length=200)
     email = models.EmailField(_('Email Address'), unique=True, null=True)
+    code = models.CharField(max_length=28, null=True, default=random_code)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []

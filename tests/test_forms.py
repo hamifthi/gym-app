@@ -1,8 +1,11 @@
 from django.test import TestCase
 from django.contrib.auth.hashers import check_password
 
-from users.forms import PersonCreationForm, CoachRegisterForm, AthleteRegisterForm
 from users.models import Person, Coach, Athlete, Day
+from users.forms import PersonCreationForm, CoachRegisterForm, AthleteRegisterForm
+
+from finance.models import Income, Expense
+from finance.forms import IncomeSubmitForm, ExpenseSubmitForm, ReportForm
 
 from datetime import time, date
 
@@ -141,7 +144,7 @@ class AthleteRegisterFormTest(TestCase):
         coach = Coach.objects.create(
             age=58, sport_field='Crossfit', start_time=time(18, 00, 00), end_time=time(21, 00, 00),
             last_transaction = date.today(), transaction_amount=200000, user=coach_person
-            )
+        )
         coach.days_of_week.set([saturday, sunday, monday])
 
     def test_athlete_creation_form_is_valid(self):
@@ -303,4 +306,150 @@ class AthleteRegisterFormTest(TestCase):
             form.errors['end_time'].get_json_data(escape_html=True)[0]['message'].replace(' ', ''),
             f'Your coach leaves the gym sooner than this time. He or She leaves at\
                 {coach.end_time}'.replace(' ', '')
+            )
+
+class IncomeSubmitFormTest(TestCase):
+    @classmethod
+    def setUpTestData(self):
+        Person.objects.create(name='hamed', last_name='fathi', email='hamed.fathi@gmail.com',
+        password='sthfortest')
+
+    def test_income_submit_form_is_valid(self):
+        form = IncomeSubmitForm({
+            'details': 'this is the test so there is nothing to say',
+            'date': '2020-04-21',
+            'amount': 10000
+        })
+        self.assertTrue(form.is_valid())
+        income = form.save(commit=False)
+        income.user = Person.objects.first()
+        income.save()
+        self.assertEqual(income.details, 'this is the test so there is nothing to say')
+        self.assertEqual(income.date.strftime('%Y-%m-%d'), date(2020, 4, 21).strftime('%Y-%m-%d'))
+        self.assertEqual(income.amount, 10000)
+        self.assertEqual(income.user, Person.objects.first())
+
+    def test_income_submit_form_blank_data(self):
+        form = IncomeSubmitForm({})
+        self.assertFalse(form.is_valid())
+        self.assertEqual(form.errors, {
+            'details': ['This field is required.'],
+            'amount': ['This field is required.'],
+        })
+
+    def test_income_Submit_form_details_help_text_field(self):
+        form = IncomeSubmitForm()
+        self.assertEqual(form['details'].help_text, 'Please describe how do you earn this income')
+    
+    def test_income_Submit_form_amount_help_text_field(self):
+        form = IncomeSubmitForm()
+        self.assertEqual(form['amount'].help_text, 'How much do you make?')
+    
+    def test_income_Submit_form_amount_error_message(self):
+        form = IncomeSubmitForm({
+            'details': 'this is the test so there is nothing to say',
+            'date': '2020-04-21',
+            'amount': 'sth'
+        })
+        self.assertFalse(form.is_valid())
+        self.assertEqual(
+            form.errors['amount'].get_json_data(escape_html=True)[0]['message'].replace(' ', ''),
+            'How much this is important. dont forget that'.replace(' ', '')
+            )
+
+class ExpenseSubmitFormTest(TestCase):
+    @classmethod
+    def setUpTestData(self):
+        Person.objects.create(name='hamed', last_name='fathi', email='hamed.fathi@gmail.com',
+        password='sthfortest')
+
+    def test_expense_submit_form_is_valid(self):
+        form = ExpenseSubmitForm({
+            'details': 'this is the test so there is nothing to say',
+            'date': '2020-04-21',
+            'amount': 10000
+        })
+        self.assertTrue(form.is_valid())
+        expense = form.save(commit=False)
+        expense.user = Person.objects.first()
+        expense.save()
+        self.assertEqual(expense.details, 'this is the test so there is nothing to say')
+        self.assertEqual(expense.date.strftime('%Y-%m-%d'), date(2020, 4, 21).strftime('%Y-%m-%d'))
+        self.assertEqual(expense.amount, 10000)
+        self.assertEqual(expense.user, Person.objects.first())
+
+    def test_expense_submit_form_blank_data(self):
+        form = ExpenseSubmitForm({})
+        self.assertFalse(form.is_valid())
+        self.assertEqual(form.errors, {
+            'details': ['This field is required.'],
+            'amount': ['This field is required.'],
+        })
+
+    def test_expense_Submit_form_details_help_text_field(self):
+        form = ExpenseSubmitForm()
+        self.assertEqual(form['details'].help_text, 'Please describe how do you spend this money')
+    
+    def test_expense_Submit_form_amount_help_text_field(self):
+        form = ExpenseSubmitForm()
+        self.assertEqual(form['amount'].help_text, 'How much do you spend?')
+    
+    def test_expense_Submit_form_amount_error_message(self):
+        form = ExpenseSubmitForm({
+            'details': 'this is the test so there is nothing to say',
+            'date': '2020-04-21',
+            'amount': 'sth'
+        })
+        self.assertFalse(form.is_valid())
+        self.assertEqual(
+            form.errors['amount'].get_json_data(escape_html=True)[0]['message'].replace(' ', ''),
+            'How much this is important. dont forget that'.replace(' ', '')
+            )
+
+class ReportFormTest(TestCase):
+    @classmethod
+    def setUpTestData(self):
+        Person.objects.create(name='hamed', last_name='fathi', email='hamed.fathi@gmail.com',
+        password='sthfortest')
+
+    def test_report_form_is_valid(self):
+        form = ReportForm({
+            'report_choice': 'income',
+            'from_date': date(2020, 3, 21),
+            'to_date': date(2020, 4, 21)
+        })
+        self.assertTrue(form.is_valid())
+
+
+    def test_report_form_blank_data(self):
+        form = ReportForm({})
+        self.assertFalse(form.is_valid())
+        self.assertEqual(form.errors, {
+            'report_choice': ['This field is required.'],
+        })
+
+    def test_report_form_report_choice_error(self):
+        form = ReportForm({'report_choice': 'other_than_options'})
+        self.assertFalse(form.is_valid())
+        self.assertEqual(
+            form.errors['report_choice'].get_json_data(escape_html=True)[0]['message'], 
+            'Select a valid choice. other_than_options is not one of the available choices.',
+        )
+
+    def test_report_form_report_choice_help_text_field(self):
+        form = ReportForm()
+        self.assertEqual(form['report_choice'].help_text, 'Which one of transactions do you want to see?')
+    
+    def test_report_form_from_date_help_text_field(self):
+        form = ReportForm()
+        self.assertEqual(
+            form['from_date'].help_text,
+            'Please pick a from date to see transaction or leave blank to see all of your transactions'
+            )
+    
+    def test_report_form_to_date_help_text_field(self):
+        form = ReportForm()
+        self.assertEqual(
+            form['to_date'].help_text,
+            'Please pick a from date to see transaction or leave blank to see all of your transactions'
             )

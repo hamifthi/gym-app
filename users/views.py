@@ -27,27 +27,28 @@ class Register(View):
             'form': form}, status=429)
         # new user
         if form.is_valid():
-            name = form.cleaned_data['name']
-            last_name = form.cleaned_data['last_name']
-            email = form.cleaned_data['email']
-            password = make_password(form.cleaned_data['password1'])
-            user_account = Person.objects.create(name=name, last_name=last_name, email=email,
-            password=password, is_active=False)
-            message = f"To activate your account please click on this link {request.build_absolute_uri()}?email={email}&code={user_account.code}"
-            send_mail('Activating your account', message, settings.EMAIL_HOST_USER,
-            recipient_list=[email])
+            user = form.save(commit=False)
+            user.is_active = False
+            user.save()
+            message = f"""To activate your account please click on this link {request.build_absolute_uri()}
+                ?email={user.email}&code={user.code}"""
+            send_mail(
+                'Activating your account', message, settings.EMAIL_HOST_USER,recipient_list=[user.email]
+            )
             message = 'The activation link has been sent to your account'
             return render(request, 'register.html', {'message': message, 'form': PersonCreationForm()})
+        # form was invalid and user must correct the form and submit it again
         else:
             error_message = 'Please solve the error and try again'
-            return render(request, 'register.html', {'error_message': error_message, 'form': form},
-            status=422)
+            return render(
+                request, 'register.html', {'error_message': error_message, 'form': form}, status=422
+            )
     
     def get(self, request, *args, **kwargs):
         # user click on activation link
         if 'code' in request.GET:
             # check that the code and email isn't none or empty
-            if request.GET['code'] != 'None' and request.GET['email'] != 'None':
+            if request.GET['code'] != '' and request.GET['email'] != '':
                 email = request.GET['email']
                 code = request.GET['code']
                 # person exist and we activate it
@@ -55,27 +56,23 @@ class Register(View):
                     Person.objects.filter(code=code).update(is_active=True)
                     Person.objects.filter(code=code).update(code=None)
                     user = Person.objects.get(email=email)
-                    payload = {
-                        'id' : user.id,
-                        'email': user.email
-                    }
-                    message = f'Your account has been activated.'
+                    message = 'Your account has been activated.'
                     return render(request, 'register.html', {'message': message, 'form': PersonCreationForm()})
                 else:
-                    error_message = 'This code is unvalid, please try again'
+                    error_message = 'This code is invalid, please try again'
                     return render(request, 'register.html', {'error_message': error_message,
-                    'form': PersonCreationForm()}, status=404)
+                    'form': PersonCreationForm()}, status=422)
             else:
                 error_message = 'Your request doesn\'t have email or code or both of them'
                 return render(request, 'register.html', {'error_message': error_message,
-                'form': PersonCreationForm()}, status=404)
+                'form': PersonCreationForm()}, status=422)
         # load the register page for the first visit
         else:
             message = 'Welcome. Please fill out the fields and Sign Up'
             return render(request, 'register.html', {'message': message, 'form': PersonCreationForm()})
 
-@method_decorator(user_is_Coach, name='dispatch')
-@method_decorator(user_is_Athlete, name='dispatch')
+@method_decorator(user_is_coach, name='dispatch')
+@method_decorator(user_is_athlete, name='dispatch')
 @method_decorator(csrf_exempt, name='dispatch')
 class AthleteRegister(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
@@ -87,39 +84,31 @@ class AthleteRegister(LoginRequiredMixin, View):
             {'error_message': error_message, 'form': form}, status=429)
 
         if form.is_valid():
-            age = form.cleaned_data['age']
-            sport_field = form.cleaned_data['sport_field']
-            days_of_week = form.cleaned_data['days_of_week']
-            user = request.user
-            try:
-                coach = form.cleaned_data['trainer']
-            except:
-                coach = None
-            transaction_amount = form.cleaned_data['transaction_amount']
-            last_transaction = form.cleaned_data['last_transaction']
-            start_time = form.cleaned_data['start_time']
-            end_time = form.cleaned_data['end_time']
-            user_account = Athlete.objects.create(
-                age=age, sport_field=sport_field, start_time=start_time, end_time=end_time, user=user,
-                trainer=coach, last_transaction=last_transaction, transaction_amount=transaction_amount
-                )
-            user_account.days_of_week.set(days_of_week)
-            Expense.objects.create(details='user registration gym membership',
-                amount=transaction_amount, user=user)
-            message = f'{user.name}_{user.last_name} now becomes an athlete in your gym'
-            return render(request, 'register_athlete.html',
-            {'message': message, 'form': AthleteRegisterForm()})
+            athlete = form.save(commit=False)
+            athlete.user = request.user
+            athlete.save()
+            Expense.objects.create(
+                details='user registration gym membership',
+                amount=form.cleaned_data['transaction_amount'], user=request.user
+            )
+            message = f'{request.user.name}_{request.user.last_name} now becomes an athlete in your gym'
+            return render(
+                request, 'register_athlete.html',
+                {'message': message, 'form': AthleteRegisterForm()}
+            )
         else:
             error_message = 'Please solve the error and try again'
-            return render(request, 'register_athlete.html',
-            {'error_message': error_message, 'form': form}, status=422)
+            return render(
+                request, 'register_athlete.html',
+                {'error_message': error_message, 'form': form}, status=422
+            )
         
     def get(self, request, *args, **kwargs):
         message = 'Welcome to this page. Please fill out the fields and submit the form'
         return render(request, 'register_athlete.html', {'message': message, 'form': AthleteRegisterForm()})
 
-@method_decorator(user_is_Athlete, name='dispatch')
-@method_decorator(user_is_Coach, name='dispatch')
+@method_decorator(user_is_athlete, name='dispatch')
+@method_decorator(user_is_coach, name='dispatch')
 @method_decorator(csrf_exempt, name='dispatch')
 class CoachRegister(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
@@ -131,22 +120,14 @@ class CoachRegister(LoginRequiredMixin, View):
             {'error_message': error_message, 'form': CoachRegisterForm()}, status=429)
 
         if form.is_valid():
-            age = form.cleaned_data['age']
-            sport_field = form.cleaned_data['sport_field']
-            days_of_week = form.cleaned_data['days_of_week']
-            user = request.user
-            transaction_amount = form.cleaned_data['transaction_amount']
-            last_transaction = form.cleaned_data['last_transaction']
-            start_time = form.cleaned_data['start_time']
-            end_time = form.cleaned_data['end_time']
-            user_account = Coach.objects.create(
-                age=age, sport_field=sport_field, start_time=start_time, user=user, end_time=end_time,
-                transaction_amount=transaction_amount, last_transaction=last_transaction
-                )
-            user_account.days_of_week.set(days_of_week)
-            message = f'{user.name}_{user.last_name} a coach in your gym'
-            return render(request, 'register_coach.html',
-            {'message': message, 'form': CoachRegisterForm()})
+            coach = form.save(commit=False)
+            coach.user = request.user
+            coach.save()
+            message = f'{request.user.name}_{request.user.last_name} is a coach in your gym now'
+            return render(
+                request, 'register_coach.html',
+                {'message': message, 'form': CoachRegisterForm()}
+            )
         else:
             error_message = 'Please solve the error and try again'
             return render(request, 'register_coach.html',

@@ -27,8 +27,10 @@ def user_recaptcha_fails(request):
     if 'g-recaptcha-response' in request.POST:
             if not google_recaptcha_verify(request):
                 return True
+            else:
+                return False
     else:
-        return True
+        return False
 
 def random_code():
     return binascii.b2a_hex(os.urandom(24)).decode('utf-8')

@@ -19,17 +19,17 @@
                     <tbody>
                             <tr>
                             <td>Incomes</td>
-                            <td>{{ incomes.amount__count }}</td>
+                            <td style="text-align:center">{{ incomes.amount__count }}</td>
                             <td>{{ incomes.amount__sum }}</td>
                             </tr>
                             <tr>
                             <td>Expenses</td>
-                            <td>{{ expenses.amount__count }}</td>
+                            <td style="text-align:center">{{ expenses.amount__count }}</td>
                             <td>{{ expenses.amount__sum }}</td>
                             </tr>
                             <tr>
                             <td>Total</td>
-                            <td>{{ incomes.amount__count|add:expenses.amount__count }}</td>
+                            <td style="text-align:center">{{ incomes.amount__count|add:expenses.amount__count }}</td>
                             <td>{{ total }}</td>
                             </tr>
                     </tbody>
